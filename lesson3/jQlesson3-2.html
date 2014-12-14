@@ -1,0 +1,115 @@
+<html>
+<head>
+	<title>jQuery源码学习 - 第三部分 -line 349</title>
+	<link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+	<script type="text/javascript" src='../jquery.js'></script>
+</head>
+<body>
+	<div class="container">
+		<div class="page-header">
+			<h1>jQuery - 扩展插件(扩展工具方法)<small>jQuery.extend </small><span class="label label-warning">Very Improtant</span></h1>
+		<div>
+
+		<div class="pannel pannel-default">
+			<div class="pannel-heding"> 扩展插件 功能:扩展jQuery的 属性方法, 也可给原生用,源码也有用</div>
+			<table class="table">
+				<thead>
+					jQuer扩展插件
+					<tr>
+						<th>
+							方法/属性:名称
+						</th>
+						<th>
+							功能
+						</th>
+						<th>
+							案例
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="active">
+						<td>
+							line:351 / 属性:expando
+						</td>
+						<td>
+							生成jQuery唯一字符串(内部)- <small>作为映射方法</small>
+						</td>
+						<td>
+							<span id='expando'></span>
+							<script> $("#expando").html($.expando)</script>
+						</td>
+					</tr>
+					<!-- noConfict() -->
+					<tr class='success'>
+						<td> line: 353/ noConflict()</td>
+						<td> 防止冲突: <small> $ 与其他库冲突 </small></td>
+						<td>
+							<span id='noConflict'></span>
+							<script>
+								//提供变量代替 $
+								var theone = $.noConflict();
+								//$被占用
+								$ = '$被占用了';
+								theone('#noConflict').html($+'我是theone');
+								$ = theone.noConflict();
+							</script>
+						</td>
+					</tr>
+					<!-- $.isReady -->
+					<tr class="active">
+						<td>line:366</td>
+						<td> DOM 是否 准备完成</td>
+						<td> 原始值false, 只会改变一次成 true</td>
+					</tr>
+					<!-- $.readyWait -->
+					<tr class='active'>
+						<td> line:370</td>
+						<td> 等待多少文件的技术器(内部)</td>
+						<td> ??</td>
+					</tr>
+					<!-- $.holdReady() -->
+					<tr class="info">
+						<td>line:373</td>
+						<td> 推迟dom 处罚</td>
+						<td>
+							<p>
+								<script>
+								// 延迟jQuery 的DOM 触发事件
+								$.holdReady(true);
+								$(function(){
+									console.log('刚刚被执行');
+								});
+								function toReady(){
+									//释放jQuery DOM触发事件
+									$.holdReady(false);
+								}
+								</script>
+								<button type="button" class="btn btn-default" onclick='toReady()'>继续jQuery的ready 行为</button>
+							</p>
+						</td>
+					</tr>
+				</tbody>
+
+			</table>
+		</div>
+
+
+
+		<div class='row'>
+			<div class="col-md-12">
+				<div class="progress">
+				  <div class="progress-bar" role="progressbar" aria-valuenow="3.95" aria-valuemin="0" aria-valuemax="100" style="width: 3.95%;">
+				    <span style='min-width: 20px;color:#ccc'>3.95% 进度 代码共8830行/349行</span>
+				  </div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+<script>
+	$(function(arg){
+		console.log(arg);
+	});
+</script>
+</html>

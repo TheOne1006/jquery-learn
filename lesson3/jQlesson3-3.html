@@ -1,0 +1,134 @@
+<html>
+<head>
+	<title>jQuery源码学习 - 第三部分 -line 409</title>
+	<link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+	<script type="text/javascript" src='../jquery.js'></script>
+</head>
+<body>
+	<div class="container">
+		<div class="page-header">
+			<h1>jQuery - 扩展插件(扩展工具方法)<small>jQuery.extend </small><span class="label label-warning">Very Improtant</span></h1>
+		<div>
+
+		<div class="pannel pannel-default">
+			<div class="pannel-heding"> 扩展插件 功能:扩展jQuery的 属性方法, 也可给原生用,源码也有用</div>
+			<table class="table">
+				<thead>
+					jQuer扩展插件
+					<tr>
+						<th>
+							方法/属性:名称
+						</th>
+						<th>
+							功能
+						</th>
+						<th>
+							案例
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="success">
+						<td>isFunction()</td>
+						<td> 判断是否为函数</td>
+						<td>
+							<span id='ifFun'> </span>
+							<script>
+								function show () {
+								}
+								$("#ifFun").html( $.isFunction(show) ? '是一个函数 ':'不是一个函数');
+							</script>
+							
+						</td>
+					</tr>
+
+
+					<tr class="success">
+						<td>type 方法</td>
+						<td> 判断变量类型</td>
+						<td>
+							<var> {}.toString.call( obj ):</var>
+							<span id='type1'></span>
+							<script>
+								$("#type1").html( {}.toString.call([]) );
+							</script>
+						</td>
+					</tr>
+
+					<!-- isPlainObject 判断对象字面量-->
+					<tr class="danger">
+						<td>isPlainObject() </td>
+						<td>判断对象字面量</td>
+						<td>
+							<script>
+								function log(str, obj){
+									console.log(str +':'+ $.isPlainObject(obj));
+								}
+								var a = {name:'li'};
+								log('纯对象', a);
+								log('new Object', new Object() );
+								log('[]',[]);
+							</script>
+
+						</td>
+					</tr>
+
+					<!-- parseJSON -->
+					<tr class="warning">
+						<td> parseJSON = JSON.parse 跟它同功能 的有 eval ,</td>
+						<td> JSON.parse 仅能解析 严格模式下的 JSON , 相对安全与 eval </td>
+						<td>
+							<script>
+								var str = '{"name":"kitty"}'; //严格json  最外圈' '
+								console.log($.parseJSON('{"name":"kitty"}'));
+							</script>
+						</td>
+					</tr>
+
+					<!-- JSONstringify -->
+					<tr class="warning">
+						<td> JSONstringify 把JSON 转成 string ,</td>
+						<td>  JSONstringify 把JSON 转成 string , </td>
+						<td>
+							<script>
+								var obj = {name:'kitty'};
+								console.log(JSON.stringify(obj));
+							</script>
+						</td>
+					</tr>
+
+					<!-- $.grep([数组], callback , 是否取反值) -->
+					<tr class="active">
+						<td>  $.grep 过滤数组 ,</td>
+						<td>  callback 中, return true =>存入一个数组, 函数运行完毕 返回改arr, </td>
+						<td>
+							<script>
+								var abc = [1,2,3,5];
+								var new_arr = $.grep(abc,function( item , key){
+									return item > 2;
+								});
+								console.log(new_arr);
+							</script>
+						</td>
+					</tr>
+
+
+				</tbody>
+
+			</table>
+		</div>
+
+
+
+		<div class='row'>
+			<div class="col-md-12">
+				<div class="progress">
+				  <div class="progress-bar" role="progressbar" aria-valuenow="4.63" aria-valuemin="0" aria-valuemax="100" style="width: 4.63%;">
+				    <span style='min-width: 20px;color:#ccc'>4.63% 进度 代码共8830行/409行</span>
+				  </div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

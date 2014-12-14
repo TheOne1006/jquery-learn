@@ -1,0 +1,52 @@
+<html>
+<head>
+	<title>jQuery源码学习 - 第二部分</title>
+	<script type="text/javascript" src='../jquery.js'></script>
+</head>
+<body>
+	<h1>测试constructor的指向</h1>
+	<script type="text/javascript">
+		var aaa = function(){};
+		aaa.prototype.say = function(){};
+		aaa.prototype.name = 'li';
+		var a1 = new aaa();
+		document.write(a1.constructor+'<br/>');
+
+		//对比案例二
+		var bbb = function (){};
+		bbb.prototype = {
+			// constructor:bbb, //可以通过在该对象中添加 constructor属性恢复
+			name:'wang',
+			say:function(){}
+		};
+		var b1 = new bbb();
+		document.write(b1.constructor);
+	</script>
+	<hr>
+	<h2>jQuery创建标签</h2>
+	<div>
+		<script type="text/javascript">
+		var div1 = $("<div></div>");
+		div1.html('<hr>innerDIV');
+		var hr = $("<hr>");
+		document.write(div1.html());
+		</script>
+	</div>
+
+</body>
+
+<script type="text/javascript">
+// 全局 log方法
+var log = function (num, str) {
+	console.log(num+'=>'+str);
+};
+
+
+(function (){
+	//打jQuery 版本
+	log(115,jQuery().jquery);
+
+})();
+
+</script>
+</html>
