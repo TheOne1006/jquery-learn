@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>jQuery源码学习 - queue</title>
+	<meta content="text/html;charset=utf-8" http-equiv="content-type">
+	<link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+	<script type="text/javascript" src='../jquery.js'></script>
+	<style>
+		#div_box1 {
+			width:100px;
+			height: 100px;
+			background:red;
+		}
+
+		#div_box2 {
+			width:200px;
+			height: 200px;
+			background:blue;
+		}
+
+	</style>
+</head>
+<body>
+	<h1> queue 队列方法<small>animate用法</small></h1>
+	<div id="div_box1"></div>
+	<hr />
+	<div id="div_box2"></div>
+	<div></div>
+	<script>
+		$('#div_box1').animate({width:300},2000);
+		$('#div_box1').animate({opacity:'0.5'},2000);
+		$('#div_box1').animate({width:100},2000);
+
+		// 相当于
+		$('#div_box2').animate({height:'300px'},2000).queue(function (next){
+			var that = this;
+			var timer = setInterval(function(){
+				if( $(that).width() >= 300 ){
+					clearInterval(timer);
+					//next 相当与 $(that).dequeue([fx]);
+					$(that).dequeue();
+					// next();
+				}
+				$(that).width( $(that).width()+5 );
+			},100);
+		}).animate({opacity:0.5},2000);
+		$('#div_box2').promise().done(function () {
+			alert('运动执行完毕');	
+		})
+
+	</script>
+</body>
+</html>

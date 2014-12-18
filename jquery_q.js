@@ -3870,17 +3870,21 @@ jQuery.extend({
 		var queue;
 
 		if ( elem ) {
+			// type 默认 有 fx 值
 			type = ( type || "fx" ) + "queue";
+			// data_priv 得内部方法 ， 获取 elem 得 type 内容 数组
 			queue = data_priv.get( elem, type );
 
 			// Speed up dequeue by getting out quickly if this is just a lookup
 			if ( data ) {
+				//  当 第3个参数 为数组时， 之前第 queue会被清除
 				if ( !queue || jQuery.isArray( data ) ) {
 					queue = data_priv.access( elem, type, jQuery.makeArray(data) );
 				} else {
 					queue.push( data );
 				}
 			}
+
 			return queue || [];
 		}
 	},
@@ -3888,9 +3892,13 @@ jQuery.extend({
 	dequeue: function( elem, type ) {
 		type = type || "fx";
 
+		// 获取 queue数组
 		var queue = jQuery.queue( elem, type ),
+			// queue 长度
 			startLength = queue.length,
+			// shift 出数组的 第一个元素
 			fn = queue.shift(),
+			
 			hooks = jQuery._queueHooks( elem, type ),
 			next = function() {
 				jQuery.dequeue( elem, type );
