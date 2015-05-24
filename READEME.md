@@ -11,6 +11,13 @@
 # 根据jQuery在github上面的项目划分
 intro 
 core 核心
+sizzle 
+callbacks 回调
+deferred 延迟对象
+support 功能检测
+data 数据
+queue 队列
+
 
 
 # 第一章 lesson01[整体架构](http://www.theone.io/#/article/id/556135cca64e8f4f51f8219b)

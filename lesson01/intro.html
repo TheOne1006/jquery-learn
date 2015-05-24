@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第一部分:line 1</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>jQuery.intro <small>jQuery 简介</small></h1>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+         jquery文件整体由一个匿名函数自执行
+         <pre>
+           (function( window, undefined ) {
+
+            // ......
+
+            window.jQuery = window.$ = jQuery; // line:8826
+           })( window );
+         </pre>
+         <p class="text-success">优点:</p>
+         <ul>
+           <li>函数体内都为局部变量,有效减少全局变量污染</li>
+           <li>也可有效的压缩代码</li>
+           <li>避免undefined,在一些浏览器上可以被赋值。<a href="http://www.theone.io/#/article/id/5556d540f69ef33e3397ed09">js假值</a></li>
+         </ul>
+
+         <p class='text-info'>在函数体内，通过全局windows的属性扩展成为全局变量。</p>
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 32.6%;">
+            <span style='min-width: 20px;color:#ccc'>0% 进度 代码共8830行/0行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

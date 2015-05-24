@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 目录结构</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>jQuery 伪代码框架</h1>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+         <pre>
+           (function( window, undefined ) {
+
+            // 定义私有变量 line: 21,94
+
+            // jQuery.prototype jquery原型扩展 line:  96, 283
+
+            // jQuery.extend jQuery继承方法 line: 285, 347
+
+            // jQuery扩展工具方法(静态方法,静态属性) line:349, 817
+
+            // sizzle line:877, 2856
+
+            // callbacks 回调对象 line: 2880, 3042
+
+            // deferred 延迟对象 line: 3043, 3183
+
+            // support 功能检测 line: 3184, 3294
+
+            // data() 数据缓存 line:3308, 3652
+
+            // queue() 队列 line: 3653, 3797
+
+            // attr 元素属性操作 line: 3803, 4299
+
+            // 事件管理操作 line: 4300, 5128
+
+            // DOM操作 line:5140, 6057
+
+            // css操作 line:6058, 6620
+
+            // 提交数据和ajax line: 6621, 7854
+
+            // animate 动画模块 line: 7855, 8584
+
+            // 位置与尺寸的方法 line:8585, 8792
+
+            // 支持模块化 line: 8804,8821
+
+            window.jQuery = window.$ = jQuery; // line:8826
+
+           })( window );
+         </pre>
+      </div>
+      <table class="table">
+        <thead>
+          Lesson
+          <tr>
+            <th>
+              模块名称
+            </th>
+            <th>
+              功能
+            </th>
+            <th>
+              位置
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="active">
+            <td>
+              <a href="./lesson01/intro.html">
+                intro简介
+              </a>
+            </td>
+            <td>
+              jquery整体的接口暴露出
+            </td>
+          </tr>
+
+
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
