@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第二部分:附录节点nodeType</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>nodes <small>节点</small></h1>
+    <div
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+        <p>在DOM(文档对象模型),每个节点都是对象。DOM节点有三个重要特征</p>
+        <ol>
+          <li>nodeName:节点名称</li>
+          <li>nodeValue:节点值</li>
+          <li>nodeType:节点类型</li>
+        </ol>
+
+        <h4>
+          nodeName 属性: 节点的名称， 只读。
+        </h4>
+        <ol>
+          <li>元素节点的nodeName 与标签名相同</li>
+          <li>属性节点的nodeName 是属性的名称</li>
+          <li>文本节点的nodeName 永远是 #text</li>
+          <li>注释节点的nodeName 永远是 #comment</li>
+          <li>文档节点的nodeName 永远是 #document</li>
+        </ol>
+        <h4>
+          nodeValue 属性: 节点的值。
+        </h4>
+        <ol>
+          <li>元素节点nodeValue 是undefined 或 null</li>
+          <li>文本节点nodeValue 是文本自身</li>
+          <li>注释节点nodeValue 是注释中的内容</li>
+          <li>属性节点nodeValue 是属性值</li>
+          <li>document nodeValue null (chrome)</li>
+        </ol>
+        <h4>
+          常用 nodeType 属性:节点的类型
+        </h4>
+        <ol>
+          <li>元素:1</li>
+          <li>属性:2</li>
+          <li>文本:3</li>
+          <li>注释:8</li>
+          <li>文本:9</li>
+        </ol>
+
+        <h4>
+          childNodes
+        </h4>
+        <p> IE全系列、firefox、chrome、opera、safari兼容问题</p>
+        <p> 其他浏览器都会计算空白节点而ie不会</p>
+      </div>
+    </div>
+
+
+
+
+
+
+
+  </div>
+
+  <div id='lab'><p id='text'> Hello World!</p><!-- 我是一个注释 --></div>
+
+</body>
+</html>
+
+<script>
+  console.log('-- nodeName --');
+  var elemLabId = document.getElementById('lab');
+  console.log('#lab元素节点nodeName:',elemLabId.nodeName);
+  // 原生js 获取属性节点
+  var attrLabId = elemLabId.getAttributeNode('id');
+  console.log('attr属性节点nodeName:', attrLabId.nodeName);
+  // 选择文本节点
+  var textNode = document.getElementById('text').childNodes[0];
+  console.log('文本节点的nodeName:', textNode.nodeName);
+
+  // document节点
+  console.log('document 的nodeName:', document.nodeName);
+
+  console.log('-- nodeValue --');
+
+  console.log('#lab元素节点的nodeValue:', elemLabId.nodeValue);
+  console.log('attr属性节点的nodeValue:', attrLabId.nodeValue);
+  console.log('文本节点的nodeValue:', textNode.nodeValue);
+
+  console.log(document);
+
+  console.log('-- nodeType --');
+  // 空格也算一个文本节点
+  var commentsNode = document.getElementById('lab').childNodes[1];
+
+  console.log('#lab元素节点的nodeType:', elemLabId.nodeType);
+  console.log('attr属性节点的nodeType:', attrLabId.nodeType);
+  console.log('文本节点的nodeType:', textNode.nodeType);
+  console.log('注释节点的nodeType:', commentsNode.nodeType);
+  console.log('document的nodeType:', document.nodeType);
+
+
+  console.log('注释节点的node属性',commentsNode.nodeValue, commentsNode.nodeName);
+
+
+</script>

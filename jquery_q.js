@@ -127,7 +127,6 @@ jQuery.fn = jQuery.prototype = {
 		}
 
 		// Handle HTML strings 判断字符串 
-
 		if ( typeof selector === "string" ) {
 			// 选择 $("#div"),$("li")
 			// 创建 $("<li>");
@@ -137,21 +136,24 @@ jQuery.fn = jQuery.prototype = {
 				match = [ null, selector, null ];
 
 			} else {
+				// link exec 正则
 				match = rquickExpr.exec( selector ); // /^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]*))$/,
 			}
 
 			// Match html or make sure no context is specified for #id
+			// 匹配html 或者创建标签没有 context 上下文
 			if ( match && (match[1] || !context) ) {
 
 				// HANDLE: $(html) -> $(array)
-				// 匹配创建标签
+				// 匹配创建标签，$('<div>',document)
 				if ( match[1] ) {
 					// context  = $(document)[0] 或者 原生的 document  
 					context = context instanceof jQuery ? context[0] : context;
 
 					// scripts is true for back-compat
 					// jQuery.parseHTML('<li>1</li><li>2</li>',document,true )
-					// parseHrml,第三个参数，表示 可以解析第一个参数的<script>标签 
+					// parseHrml,第三个参数，表示 可以解析第一个参数的<script>标签
+					// jQuery.merge 可以合并类数组对象 
 					jQuery.merge( this, jQuery.parseHTML(
 						match[1],
 						context && context.nodeType ? context.ownerDocument || context : document,
@@ -164,13 +166,13 @@ jQuery.fn = jQuery.prototype = {
 					if ( rsingleTag.test( match[1] ) && jQuery.isPlainObject( context ) ) {
 						for ( match in context ) {
 							// Properties of context are called as methods if possible
-							// eg this.html( 内容)
+							// eg this.html( 内容) 如果有方法，执行方法
 							if ( jQuery.isFunction( this[ match ] ) ) {
 								this[ match ]( context[ match ] );
 
 							// ...and otherwise set as attributes
+							//添加属性 如果没有可执行方法，则设置为 属性
 							} else {
-								//添加属性
 								this.attr( match, context[ match ] );
 							}
 						}
@@ -186,6 +188,7 @@ jQuery.fn = jQuery.prototype = {
 					// Check parentNode to catch when Blackberry 4.6 returns
 					// nodes that are no longer in the document #6963
 					// 判断一个元素 是否存在，并判断其父级是否存在
+					// 在黑莓4.6浏览器下，elem的判断不够准确
 					if ( elem && elem.parentNode ) {
 						// Inject the element directly into the jQuery object
 						this.length = 1;
@@ -214,6 +217,7 @@ jQuery.fn = jQuery.prototype = {
 
 		// HANDLE: $(DOMElement)
 		// 选择节点  $(this)   $(document)
+		// 节点没有上下文
 		} else if ( selector.nodeType ) {
 			this.context = this[0] = selector;
 			this.length = 1;
@@ -294,6 +298,7 @@ jQuery.fn = jQuery.prototype = {
 		return this;
 	},
 
+	// 实例方法 slice 实际调用 pushStack
 	slice: function() {
 		return this.pushStack( core_slice.apply( this, arguments ) );
 	},
@@ -318,12 +323,15 @@ jQuery.fn = jQuery.prototype = {
 		}));
 	},
 
+	// 常用可与配合调用 实例方法: pushStack , slice, eq, map
 	end: function() {
 		return this.prevObject || this.constructor(null);
 	},
 
 	// For internal use only.
 	// Behaves like an Array's method, not like a jQuery method.
+	// 仅内部使用
+	// 更像数组方法，而不象是jQuery方法
 	push: core_push,
 	sort: [].sort,
 	splice: [].splice
@@ -333,8 +341,8 @@ jQuery.fn = jQuery.prototype = {
 jQuery.fn.init.prototype = jQuery.fn;
 
 //jQuery 是一个函数
-// 把方法扩展到函数上面 是一个 扩展静态方法
-// 扩展到实例的原型上面 是一个 实例方法
+// 把方法扩展到函数上面 是一个 扩展静态方法, jQuery 工具方法
+// 扩展到实例的原型上面 是一个 实例方法, jQuery实例方法
 jQuery.extend = jQuery.fn.extend = function() {
 	var options, name, src, copy, copyIsArray, clone,
 		target = arguments[0] || {}, //目标元素 获取第一个参数, 或者空对象
@@ -347,19 +355,23 @@ jQuery.extend = jQuery.fn.extend = function() {
 	if ( typeof target === "boolean" ) {
 		// deep赋值 , target 赋值为 第二个参数,或者 {}
 		deep = target;
+		// 如果是拷贝,目标对象改为 第二个参数
 		target = arguments[1] || {};
 		// skip the boolean and the target
+		// 跳过 2个参数
 		i = 2;
 	}
 
 	// Handle case when target is a string or something (possible in deep copy)
 	//  当目标元素 不是对象,或者不是 函数 时, 对象赋值成为 一个空对象
+	//  容错, target 不是一个对象时，转换成一个空对象
 	if ( typeof target !== "object" && !jQuery.isFunction(target) ) {
 		target = {};
 	}
 
 	// extend jQuery itself if only one argument is passed
 	// 只有一个 参数,为 扩展插件
+	// 判断为插件扩展形式
 	if ( length === i ) {
 		target = this;
 		--i;

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第一部分:附录节点构造函数</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>构造器调用模式<small>The Constructor Invocation Pattern</small></h1>
+    <div
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+        <p>
+          改造常规构造函数成jQuery中的隐藏 new
+        </p>
+        <p>
+          我们可以通过instanceof判断this是否为当前实例,强制转换 
+        </p>
+        <p>
+          模拟jQuery构造器做法 
+        </p>
+
+
+  </div>
+
+</body>
+</html>
+
+<script>
+  // 常规构造函数
+  function Quo (name) {
+    this.name = name;
+  }
+
+  // 对prototype 赋值需重新指向
+  Quo.prototype = {
+    constructor:Quo,
+    sayname: function (){
+      console.log( 'My name is '+this.name );
+    }
+  };
+
+  var quo = new Quo('kot');
+  quo.sayname();
+
+
+  // 无显示new
+  function Foo (selector){
+
+    // 强制转换 this 
+    if(!(this instanceof Foo)){
+      return new Foo(selector);
+    }
+
+    this.selector = selector;
+    this.show = function (){
+      console.log('my selector is :'+ this.selector);
+    };
+
+    return this;
+  }
+
+  Foo('div').show();
+  // 注意避免死循环
+  /**
+   function Foo (selector) {
+    
+    this.selector = selector;
+    return new Foo(selector);
+   }
+   */
+  
+  // 模拟jQuery做法
+  var mjQuery = function (selector){
+    return new mjQuery.fn.init(selector);
+  };
+
+  mjQuery.fn = mjQuery.prototype = {
+    constructor: mjQuery,
+    init:function(selector){
+      this.selector = selector;
+
+      return this;
+    },
+    selector:'',
+    length:0,
+    fun1:function(){
+      console.log('实例方法');
+    }
+  };
+  mjQuery.fn.init.prototype = mjQuery.fn;
+
+  //静态方法
+  mjQuery.statusFun = function() {
+    console.log('静态方法');
+  };
+
+  // 扩展到 函数上的是静态方法
+  mjQuery.statusFun();
+
+   // 在原型上扩展的是实例方法
+  mjQuery('div').fun1();
+
+
+
+
+</script>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第一部分:line 96, 283</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>jQuery.prototype 对象</h1>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+         jQuery.prototype伪代码结构
+         <pre>
+          jQuery.fn = jQuery.prototype = {
+
+            jquery: 版本
+
+            constructor: constructor重新修正
+
+            init: 初始化和参数管理，
+
+            selector: 选择参数
+
+            length: 默认jQuery 对象长度 0
+
+            toArray: 转原生数组，实例方法
+
+            get: 查找原生dom对象集合
+                 $(selector).get(null) == $(selector).toArray,
+                 $(selector).get(+ / - num) == $(selector)[number]; 
+            
+            pushStarck: jQuery 对象的入栈
+
+            each : 遍历 通过工具方法 jQuery.each
+
+            ready: DOM加载的接口
+
+            slice: 集合的截取
+
+            first: 集合的第一项 调用 .eq(0)
+
+            last: 集合的最后一项 .eq(-1)
+
+            eq(num) : 集合的指定项
+
+            map: 遍历处理集合，返回新集合
+
+            end: 返回集合前一个状态
+
+            // 仅在内部使用,更像数组方法
+            push:
+            sort:
+            splice:
+
+          }
+         </pre>
+      </div>
+    </div>
+    <h4>1、constructor</h4>
+    <p>
+      通过protoype.method 扩展时,prototype.contructor 指向构造函数.
+    </p>
+    <p>
+      通过prototype = {},扩展时,prototype.contructor则指向{}
+    </p>
+
+    <h4>2、init</h4>
+    <p>
+      提供接口通过$(selector),jQuery(selector)初始化
+    </p>
+    <pre>
+      使用初始化类型
+      $('') $(null) $(undefined) $(false)
+
+      $('#id') $('.class') $('div') $('#div1 #div2')
+
+      $(this) $(document)
+
+      $(function(){});
+
+      $([]) $({})
+    </pre>
+    <p>
+      2.1 selector 类型为假值
+    </p>
+    <p>
+      2.2 selector 类型为string
+    </p>
+    <ul>
+      <li>
+        2.2.1 string and 第一个字符:&lt;,最后一字符&gt;,result match = [null, selector, null]
+      </li>
+      <li>
+        2.2.2 匹配html 标签(#div1,&lt;li&gt;),
+        result match = requickExpr.exec(selector)
+      </li>
+      <li>
+       2.2.3 jQuery.parsetHTML 解析生成html节点数组
+      </li>
+      <li>
+        2.2.4 jQuery.merge 合并类数组对象
+      </li>
+      <li>
+        2.2.5 jQuery.isPlainObject() 判断是否为对象字面量，创建元素同时给这个元素上进行些设置
+      </li>
+      <li>
+        2.2.6 jQuery('#id') 在黑莓4.6下的elem id寻找问题
+      </li>
+       <li>
+         2.2.7 复杂寻找 find() , context 处理，转换成$(document).find()
+       </li>
+    </ul>
+    <p>
+      2.3 DomElement dom节点 $(body)
+      <ul>
+        <li>
+          2.3.1 nodeType 节点知识
+        </li>
+        <li>
+          2。3.2 selector 是一个节点
+        </li>
+      </ul>
+    </p>
+    <p>
+      2.4 selector is function
+    </p>
+    <ul>
+      <li>
+        $(function()) = $(document).ready(function());
+      </li>
+    </ul>
+    <p>
+      2.5 $( $('#div'))
+    </p>
+    <p>
+      2.6 return jQuery.makeArray( selector, this);
+      <ul>
+        <li>
+          2.6.1 jQuery.makeArray(),可以将伪数组，也可以转成 类数组 
+        </li>
+      </ul>
+    </p>
+
+    <hr>
+
+    <h4>$(selector).pushStack</h4>
+    <p>
+      
+    </p>
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.032%;">
+            <span style='min-width: 20px;color:#ccc'>0.032% 进度 代码共8830行/283行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id='eg'>
+  </div>
+
+  <hr/>
+  stack eg:
+  <div id="stackdiv"></div>
+  <span id='stackspan'></span>
+</body>
+</html>
+<script>
+  // constructor
+  function Mycon () { }
+
+  // 对原型进行添加
+  Mycon.prototype.call = function (){
+    console.log('is call');
+  };
+
+  var mycon = new Mycon();
+
+  console.log(mycon.constructor);
+
+  function Mycon2 () {
+  }
+  // 对原型进行覆盖
+  Mycon2.prototype = {
+    call: function (){
+      console.log('is call too');
+    }
+  };
+
+  var mycon2 = new Mycon2();
+
+  console.log(mycon2.constructor);
+
+  // init
+  console.log('--init--');
+
+  console.log($(false));
+
+  // init 2.2.2
+  console.log('--2.2.2--');
+  var requickExpr = /^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]*))$/,
+  match;
+
+  console.log(requickExpr.exec('#eg'));
+  console.log(requickExpr.exec('<div>hello'));
+
+  // toArray()
+  console.log('jQuery实例$("li"):',$('li'));
+  console.log('toArray:',$('li').toArray());
+
+  // pushStack test
+  console.log('--pushStarck--');
+  $('#stackdiv').pushStack($('#stackspan')).html('inner stackspan').end().html('inner stackdiv');
+
+</script>

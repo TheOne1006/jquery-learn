@@ -1,0 +1,69 @@
+ <!DOCTYPE html>
+ <html>
+ <head>
+   <title>jQuery源码学习 - 附apply调用 </title>
+   <meta content="text/html;charset=utf-8" http-equiv="content-type">
+   <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+   <script type="text/javascript" src='../jquery.js'></script>
+ </head>
+ <body>
+   <div class="container">
+     <div class="page-header">
+       <h1> apply()方法 和 call()方法 </h1>
+       <p class="text-primary">
+         间接调用函数。call() 和 apply() 的第一个实参数 是调用上下文, 在函数体内通过 this 来获得引用。
+       </p>
+       <ul>
+         <li>在ECMA5严格模式中,call() 和 apply() 的第一个参数会变为this 的值。(包括 null, undefined)</li>
+         <li>
+           在ECMA3 和非严格模式,传入null 和 undefined 都会被 全局对象替代，而其他原始值则会被相应的包装对象替代。
+         </li>
+       </ul>
+     <div>
+
+     <div class="pannel pannel-default">
+       <div class="pannel-heding"> </div>
+       <div class="pennel-body">
+       <pre>
+         // call(), 的参数 除第一个实参的剩余参数
+         f.call(obj, arg1, arg2, arg3);
+
+         // apply() 第二个参数为一个数组，作为传入函数的参数
+         // 实际上第二个也能接受 arguments数组
+         f.apply(obj ,[arg1, arg2, arg3]);
+
+       </pre>
+
+       </div>
+     </div>
+
+
+
+     <div class='row'>
+       <div class="col-md-12">
+         <div class="progress">
+           <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.032%;">
+             <span style='min-width: 20px;color:#ccc'>0.032% 进度 代码共8830行/283行</span>
+           </div>
+         </div>
+       </div>
+     </div>
+   </div>
+
+
+ </body>
+ </html>
+ <script>
+   $.extend({
+     log: function(){
+       var messages = Array.prototype.slice.call(arguments, 0);
+       // 控制台输出,上下文必须时 console
+       console.log.apply( console, ['$log:'].concat(messages) );
+     },
+     log2: function() {
+       console.log.apply( console, arguments);
+     }
+   });
+
+
+ </script>

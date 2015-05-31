@@ -20,9 +20,9 @@ queue 队列
 
 
 
-# 第一章 lesson01[整体架构](http://www.theone.io/#/article/id/556135cca64e8f4f51f8219b)
+# 第一章 lesson01[intro](http://www.theone.io/#/article/id/556135cca64e8f4f51f8219b)
 ### 
-  1.1 jQuery 简介
+  1.1 jQuery 简介注释
   1.2 
 
 # 第二章 lesson02[core核心]

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>jQuery源码学习 - 第一部分:line 1</title>
+  <title>jQuery源码学习 - 第一部分:line 1,94</title>
   <meta content="text/html;charset=utf-8" http-equiv="content-type">
   <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
   <script type="text/javascript" src='../jquery.js'></script>
@@ -17,13 +17,110 @@
       <div class="pennel-body">
          jquery文件整体由一个匿名函数自执行
          <pre>
+
            (function( window, undefined ) {
+            // Can't do this because several apps including ASP.NET trace
+            // the stack via arguments.caller.callee and Firefox dies if
+            // you try to trace through "use strict" call chains. (#13335)
+            // Support: Firefox 18+
+            //"use strict";
+         </pre>
+         <p>"use strict";设定严格模式
+            ,不建议开启，以免影响 asp.net 和 火狐早期版本</p>
+         <pre>
+            var
+              // A central reference to the root jQuery(document)
+              // 相当于jQuery 等根目录，相当于 jQuery(document);
+              rootjQuery,
+
+              // The deferred used on DOM ready
+              // 跟 DOM ready 事件相关
+              readyList,
+
+              // Support: IE9
+              // For `typeof xmlNode.method` instead of `xmlNode.method !== undefined`
+              // 字符串的 'undefined' 
+              // 在ie版本中,xml格格式下，对直接只用undefined 不识别
+              core_strundefined = typeof undefined,
+
+              // Use the correct document accordingly with window argument (sandbox)
+              location = window.location, //网址信息
+              document = window.document, //页面文档
+              docElem = document.documentElement, //文档的html标签
+
+              // Map over jQuery in case of overwrite
+              // 防止冲突
+              _jQuery = window.jQuery,
+
+              // Map over the $ in case of overwrite
+              // 防止冲突
+              _$ = window.$,
+
+              // [[Class]] -> type pairs
+              // class to type 使用 $.type（）方法 判断type {'[Object String]':'string', ......}
+              class2type = {},
+
+              // List of deleted data cache ids, so we can reuse them
+              core_deletedIds = [],
+
+              core_version = "2.0.3",
+
+              // Save a reference to some core methods
+              // 保存核心方法
+              core_concat = core_deletedIds.concat,
+              core_push = core_deletedIds.push,
+              core_slice = core_deletedIds.slice,
+              core_indexOf = core_deletedIds.indexOf,
+              core_toString = class2type.toString,
+              core_hasOwn = class2type.hasOwnProperty,
+              core_trim = core_version.trim,
+
+              // Define a local copy of jQuery
+              jQuery = function( selector, context ) {
+                // 返回一个构造函数器等初始化， jQuery.fn = jQuery.prototype
+                return new jQuery.fn.init( selector, context, rootjQuery );
+              },
+
+              // Used for matching numbers,匹配数字
+              core_pnum = /[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source,
+
+              // Used for splitting on whitespace 匹配单词，通过空格分割开
+              core_rnotwhite = /\S+/g,
+
+              // A simple way to check for HTML strings
+              // Prioritize #id over <tag> to avoid XSS via location.hash (#9521)
+              // Strict HTML recognition (#11290: must start with <)
+              //匹配 标签 或者ID, 防止XSS注入
+              rquickExpr = /^(?:\s*(<[\w\W]+>)[^>]*|#([\w-]*))$/,
+
+              // Match a standalone tag
+              // 匹配一个独立等标签 <p></p> or <hr />
+              rsingleTag = /^<(\w+)\s*\/?>(?:<\/\1>|)$/,
+
+              // Matches dashed string for camelizing
+              rmsPrefix = /^-ms-/,    //IE css前缀
+              rdashAlpha = /-([\da-z])/gi, // 匹配获取 -单词,驼峰转法
+
+              // Used by jQuery.camelCase as callback to replace()
+              // 转驼峰等回调函数
+              fcamelCase = function( all, letter ) {
+                return letter.toUpperCase();
+              },
+
+              // The ready event handler and self cleanup method
+              // dom 加载成功触发的
+              completed = function() {
+                document.removeEventListener( "DOMContentLoaded", completed, false );
+                window.removeEventListener( "load", completed, false );
+                jQuery.ready();
+              };
 
             // ......
 
             window.jQuery = window.$ = jQuery; // line:8826
            })( window );
          </pre>
+         <h3>函数自执行</h3>
          <p class="text-success">优点:</p>
          <ul>
            <li>函数体内都为局部变量,有效减少全局变量污染</li>
@@ -32,6 +129,8 @@
          </ul>
 
          <p class='text-info'>在函数体内，通过全局windows的属性扩展成为全局变量。</p>
+
+
       </div>
     </div>
 
@@ -40,8 +139,8 @@
     <div class='row'>
       <div class="col-md-12">
         <div class="progress">
-          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 32.6%;">
-            <span style='min-width: 20px;color:#ccc'>0% 进度 代码共8830行/0行</span>
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.0038%;">
+            <span style='min-width: 20px;color:#ccc'>0% 进度 代码共8830行/94行</span>
           </div>
         </div>
       </div>
@@ -49,3 +148,29 @@
   </div>
 </body>
 </html>
+<script>
+  function Foo (){
+    // 第一次执行时,this 是外部作用域
+    console.log(this);
+
+    // 第二次执行 
+    if(this){
+      // 第二次执行打印 foo 构造函数
+      console.log(this.constructor);
+    }
+
+    // 如果this 不属于 Foo， 则在Foo 内new 一个Foo ,
+    // new 时，上下文会成为 this
+    if(!(this instanceof Foo)){
+      return new Foo();
+    }
+   
+    
+    this.name = 'my name is foo';
+    
+    return this;
+    
+  }
+  var foo = Foo();
+  console.log(foo.name);
+</script>

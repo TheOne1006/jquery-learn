@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第二部分:line 284, </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>jQuery.extend <small>jQuery 的插件开发</small></h1>
+      <ol>
+        <li>一种是挂在jQuery命名空间下的全局函数，也可称为静态方法</li>
+        <li>
+          一种是jQuery对象级别的方法，即挂在jQuery原型下的方法，这样通过选择器获取的jQuery对象实例也能共享该方法
+        </li>
+      </ol>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+          <h4>
+           jQuery.extend 的使用方式:
+          </h4>
+         <p>
+           1、当只有一个对象自变量时,为jQuery 扩展插件形式 eg1
+         </p>
+         <p>
+           2、当有多个对象字面量时，所有参数都将扩展到第一个参数上
+         </p>
+         <p>
+           3、深拷贝  $.extend(true, targetObj, src1Obj, src2Obj .....);
+         </p>
+         <h4>伪代码结构</h4>
+         <pre>
+         jQuery.exntend = jQuery.fn.extend = function () {
+          // 定义了一些变量
+          var options, name, src, copy, copyIsArray, clone, target, i, length, deep
+
+          //判断是否为深拷贝
+          if( target )
+
+          // 判断参数是否正确
+
+          // 判断是否为插件扩展
+
+
+          // 遍历多个 src arguments
+          for(){
+            // 容错 arg 参数为 null
+            // 并且将options 赋值为 当前src对象
+            if()
+
+
+            // 遍历目标对象上的属性
+            for(){
+
+              // 防止循环引用
+              if()
+
+              // 深拷贝
+              if()
+
+              // 浅拷贝
+              else if()
+            }
+
+          }
+           
+         }
+         </pre>
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.032%;">
+            <span style='min-width: 20px;color:#ccc'>0.032% 进度 代码共8830行/283行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
+<script>
+  $.extend({
+    log: function(){
+      var messages = Array.prototype.slice.call(arguments, 0);
+      // 控制台输出,上下文必须时 console
+      console.log.apply( console, ['[$log]>>'].concat(messages) );
+    },
+    log2: function() {
+      console.log.apply( console, arguments);
+    }
+  });
+
+  $.log2('jQuery 案例一:扩展插件');
+
+  $.extend({
+    sing: function(){
+      $.log('既然你诚信诚意的祈求,');
+    }
+  });
+
+  $.fn.extend({
+    sing2:function(){
+      $.log('我就大慈大悲的原谅你!');
+    }
+  });
+
+  // 使用插件
+  $.sing();
+  $('div').sing2();
+
+  // $('div').sing(); 
+  // $.sing2();
+  
+
+</script>
