@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>jQuery源码学习 - 第二部分:line 284, </title>
+  <title>jQuery源码学习 - 第三部分:line 348, </title>
   <meta content="text/html;charset=utf-8" http-equiv="content-type">
   <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
   <script type="text/javascript" src='../jquery.js'></script>
@@ -9,7 +9,7 @@
 <body>
   <div class="container">
     <div class="page-header">
-      <h1>jQuery.extend <small>jQuery 的插件开发</small></h1>
+      <h1>Core  <small>jQuery 的extend方法实现 </small></h1>
       <ol>
         <li>一种是挂在jQuery命名空间下的全局函数，也可称为静态方法</li>
         <li>
@@ -53,24 +53,30 @@
             // 并且将options 赋值为 当前src对象
             if()
 
+              // 遍历目标对象上的属性
+              for(){
 
-            // 遍历目标对象上的属性
-            for(){
+                // 防止循环引用
+                if()
 
-              // 防止循环引用
-              if()
+                // 深拷贝
+                if()
 
-              // 深拷贝
-              if()
-
-              // 浅拷贝
-              else if()
-            }
+                // 浅拷贝
+                else if()
+              }
 
           }
            
          }
          </pre>
+         <h4>Question</h4>
+         <p>
+           jQuery.extend = jQuery.fn.extend 调用同一套扩展代码，为什么都能用?
+         </p>
+         <p>
+           上下文环境不同，this对象不同
+         </p>
 
       </div>
     </div>
@@ -80,8 +86,8 @@
     <div class='row'>
       <div class="col-md-12">
         <div class="progress">
-          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.032%;">
-            <span style='min-width: 20px;color:#ccc'>0.032% 进度 代码共8830行/283行</span>
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.039%;">
+            <span style='min-width: 20px;color:#ccc'>0.039% 进度 代码共8830行/348行</span>
           </div>
         </div>
       </div>
@@ -123,6 +129,51 @@
 
   // $('div').sing(); 
   // $.sing2();
+
+
+
+  $.log('--extend 扩展对象--');
+  // 默认浅拷贝
+
+  var target = {
+    name:'lilei',
+    age:'13'
+  };
+
+  var extObj = {
+    age:14,
+    like:'food'
+  };
+
+  $.log($.extend(target, extObj));
+
+  $.log('深拷贝与浅拷贝对比');
+
+  var src1 = {
+    attr:{
+      position:'relative',
+      top:200
+    }
+  };
+
+  // 引用赋值
+  var nodeep = $.extend(false, {}, src1);
+
+  // 创建新对象并赋值
+  var deep = $.extend(true, {}, src1);
+
+  src1.attr.top = 300;
+
+  $.log(nodeep.attr.top); //300
+
+  $.log( deep.attr.top ); //200
+
+
+// 防止循环引用
+var a = {};
+
+$.extend(a, { copy:a});
+
   
 
 </script>

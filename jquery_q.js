@@ -104,8 +104,12 @@ var
 	// The ready event handler and self cleanup method
 	// dom 加载成功触发的
 	completed = function() {
+		// 取消 document的 domcontentloaded Dom 文档完成监听事件 completed  
 		document.removeEventListener( "DOMContentLoaded", completed, false );
+		// 取消 window对象 load windows load 完成监听事件 completed  
 		window.removeEventListener( "load", completed, false );
+
+		//并且执行 jQuery.ready();
 		jQuery.ready();
 	};
 //第二部分，添加一些基本的属性跟方法，
@@ -389,7 +393,7 @@ jQuery.extend = jQuery.fn.extend = function() {
 				copy = options[ name ]; // 拷贝对象的 name
 
 				// Prevent never-ending loop
-				// 防止死循环, 拷贝对象 的至等于 目标对象
+				// 防止死循环, 拷贝对象 等于 目标对象
 				if ( target === copy ) {
 					continue;
 				}
@@ -397,6 +401,10 @@ jQuery.extend = jQuery.fn.extend = function() {
 				// Recurse if we're merging plain objects or arrays
 				// 深拷贝 且 copy存在  且 拷贝对象为一个对象 或者为一个数组
 				if ( deep && copy && ( jQuery.isPlainObject(copy) || (copyIsArray = jQuery.isArray(copy)) ) ) {
+
+
+					// 一下两个 ?: 运算，目的是，src如果在target 中存在，那么将保留原因大其他属性。
+
 					//copy 是一个数组
 					if ( copyIsArray ) {
 						copyIsArray = false;
@@ -414,6 +422,7 @@ jQuery.extend = jQuery.fn.extend = function() {
 
 				// Don't bring in undefined values
 				// 如果 copy 对象 没有下一层,且存在时
+				// 赋值基本类型, 或者 浅拷贝
 				} else if ( copy !== undefined ) {
 					target[ name ] = copy;
 				}
@@ -429,8 +438,12 @@ jQuery.extend({
 	// Unique for each copy of jQuery on the page
 	expando: "jQuery" + ( core_version + Math.random() ).replace( /\D/g, "" ),
 
+	/**
+	 * 返回值 就是jQuery 提供的接口，原来的$
+	 */
 	noConflict: function( deep ) {
 		// 在jQuery库 自执行时, 把 windows.$ 暂时存入 _$中 
+		// 并且放弃 $控制权
 		if ( window.$ === jQuery ) {
 			window.$ = _$;
 		}
@@ -460,6 +473,7 @@ jQuery.extend({
 	},
 
 	// Handle when the DOM is ready
+	// dom加载完成执行 ready
 	ready: function( wait ) {
 
 		// Abort if there are pending holds or we're already ready
@@ -477,7 +491,7 @@ jQuery.extend({
 
 		// If there are functions bound, to execute
 		// $(function( arg ){ alert(arg)}) 
-		// 第一个为,  第二个方法的指
+		// 第一个为参数执行函数的 this,第二个参数为jquery 
 		readyList.resolveWith( document, [ jQuery ] );
 
 		// Trigger any bound ready events
@@ -490,6 +504,7 @@ jQuery.extend({
 	// See test/unit/core.js for details concerning isFunction.
 	// Since version 1.3, DOM methods and functions like alert
 	// aren't supported. They return false on IE (#2968).
+	// 老版本 typeof 会返回 object
 	isFunction: function( obj ) {
 		return jQuery.type(obj) === "function";
 	},
@@ -979,6 +994,7 @@ jQuery.ready.promise = function( obj ) {
 		// Catch cases where $(document).ready() is called after the browser event has already occurred.
 		// we once tried to use readyState "interactive" here, but it caused issues like the one
 		// discovered by ChrisS here: http://bugs.jquery.com/ticket/12282#comment:15
+		// dom 的ready状态 为完成
 		if ( document.readyState === "complete" ) {
 			// dom 节点 加载完成
 			// Handle it asynchronously to allow scripts the opportunity to delay ready

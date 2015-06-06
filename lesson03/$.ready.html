@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 附录dom加载 </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>$.ready<small> jquery 处理dom加载事件</small></h1>
+      <ol>
+        <li>$(fn)</li>
+        <li>
+          $(document).ready( fn)
+        </li>
+      </ol>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+<pre>
+
+1、提供接口
+$(function(){}) == rootjQuery.ready(function(){})
+
+==>
+2、实例方法 jQuery.prototype.init.ready();
+
+==>
+3、工具方法and 延迟对象 jQuery.ready.promise().done( fn );
+
+==> 
+4、创建一个延迟对象
+
+4.1 延迟对象触发 jQuery.ready()
+4.2 延迟对象触发 addEventListener ==> completed ==> jQuery.ready()
+
+==>
+5、readyList.resolveWith(document,[]) // 已完成
+
+</pre>
+     
+     <h5>解析 jQuery.ready.promise</h5>
+<pre>
+ jQuery.ready.promise = function( obj)
+ {
+
+  // jQuery 内部变量,readyList
+ if(!readyList){
+
+  readyList = jQuery.Deferred(); // 创建jQuery 共享私有变量，一个延迟对象。
+
+  if( document.readyState == 'complete'){
+  // 判断dom 准备完成 为 document.readyState 值为 'complete'
+
+  setTimeout( jQuery.ready ); //hacking ie
+  }else {
+
+    // 监听 document的 DOMContentLoaded 事件
+    document.addEventListener('DOMContentLoaded', completed, false);
+
+    // 监听 window 的 load 事件
+    window.addEventListener('load', complete, false);
+
+    /**
+     * addEventListener中的第三个参 数是useCapture, 一个bool类型。当为false时为冒泡获取(由里向外)，true为capture方式(由外向里)。
+     */
+  }
+
+  return readyList.promise(obj);
+
+
+ }
+ }
+
+</pre>
+
+<p>
+  completed 方法 jQuery 初始化时，定义的私有内部方法
+  功能: 
+  取消 绑定 绑定在 document 和 dom 上检测文档加载完成的事件，同时执行 jQuery.ready()
+</p>
+
+
+<h4>
+  jQuery.ready
+</h4>
+<pre>
+  // 参数 与holdReady 有关
+  jQuery.ready = function (wait)
+  {
+
+    .......
+
+    // 延迟对象触发 触发 done(fn)
+    readyList.resolveWith(document, [jQuery]);
+
+    /**
+     * 兼容  $(document).on('ready',func ) 写法
+     */
+    if(jQuery.fn.trigger)
+    {
+      jQuery( document ).trigger("ready").off("ready");
+    }
+
+  }
+</pre>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.039%;">
+            <span style='min-width: 20px;color:#ccc'>0.039% 进度 代码共8830行/348行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>

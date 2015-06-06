@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第三部分:line 348, </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Core <small>jQuery.extend 扩展工具方法 </small></h1>
+      <ol>
+        <li>jQuery 工具方法是jQuery最底层的架构</li>
+        <li>
+          在许多实例方法中，最终调用的还是工具方法
+        </li>
+      </ol>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+      <pre>
+jQuery.extend({
+expando: 生成唯一的字符串
+
+noConflict() : 作用 － 防止冲突,
+
+/**
+ * dom加载系列
+ */
+isReady: DOM是否加载完毕 只会触发一次变更 
+
+holdReady() : 推迟dom 触发 ready
+
+ready() : dom加载相关
+
+
+isFunction() : 对象是否为函数 实际调用 jQuery.type
+
+isArray() : Array.isArray 原生方法 ECMA5
+
+isWindow() : 对象是否为 window ,window 特点, window.window == window
+
+isNumeric() : 对象是否为可识别数字 !NaN and isFinite
+
+type() : 判断对象类型
+
+isPlainObect () : 判断是否为对象字面量 ?
+
+isEmptyObject() : 判断对象是否是一个空对象
+
+error() : 抛出一个错误对象
+
+parseHTML(): 解析 html
+
+parseXML(): str2xml
+
+noop() /noop : function() {}
+
+globalEval(): eval code
+
+camelCase(): 转驼峰
+
+nodeName(): 是否为某节点
+
+each() : 遍历集合
+
+trim(): 去除前后空格
+
+makeArray(): 转数组，内部可用为转特殊对象
+
+inArray(): 数组版的 indexOf()
+
+merge() :  合并集合
+
+grep() : ?
+
+map() : map
+
+
+guid: 与事件相关
+
+proxy() : ?
+
+access() : ?
+
+swap() : ?
+
+
+})
+      </pre>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.039%;">
+            <span style='min-width: 20px;color:#ccc'>0.039% 进度 代码共8830行/348行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
