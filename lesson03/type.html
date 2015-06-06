@@ -25,9 +25,53 @@
         伪代码结构
       </h4>
 <pre>
+type: function( obj ) {
+// obj == null  or undefined
+// 判断 null 和 undefined
+  if ( obj == null ) {
+    return String( obj );
+  }
+  // Support: Safari &lt;= 5.1 (functionish RegExp)
+  //  coce_toString.call(obj) = {}.toString.call  
+  // 核心方法 {}.toString.call(obj)
+  // 通过字符串判断的好处 在不同window 下结果相同
+
+  /**
+   * 在 obj 为 object 或者 function 执行 class2type
+   * 不等于上两者，为基本类型，可直接用通过typeof 判断
+   */
+  return typeof obj === "object" || typeof obj === "function" ?
+    class2type[ core_toString.call(obj) ] || "object" :
+    typeof obj;
+},
+</pre>
+
+<h5>
+  class2type 对象
+</h5>
+<pre>
+  // Populate the class2type map
+  // 构造class2type对象
+  jQuery.each("Boolean Number String Function Array Date RegExp Object Error".split(" "), function(i, name) {
+    class2type[ "[object " + name + "]" ] = name.toLowerCase();
+  });
 
 </pre>
 
+<pre>
+   // 打印除class2type 对象
+Object{
+  [object Array]: "array",
+  [object Boolean]: "boolean",
+  [object Date]: "date",
+  [object Error]: "error",
+  [object Function]: "function",
+  [object Number]: "number",
+  [object Object]: "object",
+  [object RegExp]: "regexp",
+  [object String]: "string"
+   }
+</pre>
 
       </div>
     </div>

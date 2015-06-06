@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - each And map </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>$.each and $.map<small> jquery 迭代器</small></h1>
+      <ol>
+        <li>使用方法</li>
+        <li>
+          $.each(obj, function(key, item){})
+        </li>
+      </ol>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+      <h4>
+        $.each伪代码结构
+      </h4>
+<pre>
+each: function( obj, callback, args ) {
+  // 定义一些变量
+
+  var value,
+    i = 0,
+    // 获取对象的length属性 , 
+    length = obj.length, 
+    //判断是否为类数组, $对象,[],｛length:0｝ 
+    isArray = isArraylike( obj ); 
+
+    if(args /* 内部使用*/) {
+
+       不一样的方法是，传参方式为 apply (thisObj, [arg1,...,argn])
+
+    }else{
+    // 外部api
+      // obj为类数组
+      if(isArray){
+        // 通过for 循环
+        for(;; i++){
+          //val = callback.call( 执行上下文, key, value 等同上下文)
+
+          //如果 callback 的返回值为 false  则break 中止 for
+          if( val === false){
+            break
+          }
+        }
+
+      }else {
+      // 非类数组集合
+        for( in ){
+          //同理，如果 callback 的 return  为 false , break;
+        }
+      }
+
+    }
+
+  return obj;
+},
+</pre>
+
+<h4>
+  $.map() 映射 通过自定义规则返回新数组
+</h4>
+<pre>
+  var arr = [1,5,5,7];
+  var newarr = $.map(arr, function(item, key){
+    return item + 1;
+  } );
+
+  // newarr [2,6,6,8];
+</pre>
+<h4>
+  $.map伪代码结构
+</h4>
+<pre>
+  map: function (elems /*映射集合*/, callback , arg /*内部使用*/) {
+    // 定义变量
+    var 
+      value callback 的返回值,
+      i＝0 用于遍历 elems 元素,
+      length = elems.length 支持 类数组对象,
+      isArray 判断是否为类数组
+      ret // 最终生成的数组，初始化为[]
+
+    if( isArray){
+      //映射对象为类数组或者数组，使用 for遍历
+      for(){
+
+        执行callback
+        返回值不为 undefined or null
+        加入 ret 中
+
+      }eles {
+      
+      // elem 为json ,使用 for in 遍历
+      for( in )
+      {
+        返回值不为 undefined or null 加入 ret中
+
+      }
+
+
+      }
+
+
+    }
+  
+  
+  return core_concat.apply([], ret);
+  }
+
+</pre>
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.039%;">
+            <span style='min-width: 20px;color:#ccc'>0.039% 进度 代码共8830行/348行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>

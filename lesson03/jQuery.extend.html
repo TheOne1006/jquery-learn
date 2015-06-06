@@ -48,21 +48,33 @@ isWindow() : 对象是否为 window ,window 特点, window.window == window
 
 isNumeric() : 对象是否为可识别数字 !NaN and isFinite
 
-type() : 判断对象类型
+type() : 判断对象类型 class2type And {}.toString.call() ???
 
-isPlainObect () : 判断是否为对象字面量 ?
+
+isPlainObect () : 判断是否为对象字面量
+/**
+ * 核心方法
+ * core_hasOwn.class = {}.hasOwnProperty 是否为自身方法
+ * 只有 Object.prototype 下才有 isPrototypeOf 方法
+ * 判断 obj.constructor 的原型 prototype 是否为 Object.prototype
+ */
+try catch  // 兼容火狐 &lt;20
+
 
 isEmptyObject() : 判断对象是否是一个空对象
 
 error() : 抛出一个错误对象
 
-parseHTML(): 解析 html
+parseHTML(): 解析 html，创建节点集合
+  － 使用 parsetHTML('string', document, true/* 是否可以为script */)
+
+paseJSON(): 解析字符串为JSON JSON.parse, JSON 解析成字符串 JSON.stringify()
 
 parseXML(): str2xml
 
 noop() /noop : function() {}
 
-globalEval(): eval code
+globalEval(): eval code // 创建全局变量
 
 camelCase(): 转驼峰
 
@@ -70,20 +82,22 @@ nodeName(): 是否为某节点
 
 each() : 遍历集合
 
-trim(): 去除前后空格
+trim(): 去除前后空格 '2.0.3'.trim 原生字符串 trim
 
-makeArray(): 转数组，内部可用为转特殊对象
+makeArray(): 转数组，内部可用为转特殊对象，核心 merge()
 
 inArray(): 数组版的 indexOf()
 
 merge() :  合并集合
 
-grep() : ?
 
-map() : map
+grep() : 过滤数组
+
+map() : map 映射新数组
 
 
 guid: 与事件相关
+
 
 proxy() : ?
 
@@ -94,6 +108,19 @@ swap() : ?
 
 })
       </pre>
+      <h4>
+        grep(elems, callback, inv) 使用方法
+        // inv 排除过滤条件, 默认 false
+        // callback return true 时加入新数组
+      </h4>
+<pre>
+  var newArr = $.grep(['1','2','3',4] ,function(key, value){
+    return value > 1;
+  });
+
+  // newArray => ['2','3',4]
+
+</pre>
 
 
       </div>

@@ -26,3 +26,17 @@ queue 队列
   1.2 
 
 # 第二章 lesson02[core核心]
+###
+  2.1 prototype 的构建
+  2.2 nodeType 节点的简介
+  2.3 dom加载的步骤
+
+# 第三章 lesson03 [extend]
+###
+  3.1 extend  extend在jquery中的实现
+  3.2 jQuery.extend 扩展工具方法
+  3.3 apply&call的调用
+  3.4 $.ready dom加载在jQuery代码中
+  3.5 type jQuery中的类型判断
+  3.6 jQuery.each和 jQuery.map 
+

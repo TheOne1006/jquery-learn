@@ -532,6 +532,7 @@ jQuery.extend({
 			typeof obj;
 	},
 	// 判断对象字面量
+	// {} and new Object() return true
 	isPlainObject: function( obj ) {
 		// Not plain objects:
 		// - Any object or value whose internal [[Class]] property is not "[object Object]"
@@ -546,6 +547,7 @@ jQuery.extend({
 
 		// Support: Firefox <20
 		// The try/catch suppresses exceptions thrown when attempting to access
+		// 火狐小于20 obj.constructor 容易出现内存泄漏
 		// the "constructor" property of certain host objects, ie. |window.location|
 		// https://bugzilla.mozilla.org/show_bug.cgi?id=814622
 		// ie 下的 windows.location  对象, 无nodeType ,不是window
@@ -566,8 +568,10 @@ jQuery.extend({
 		return true;
 	},
 	// 如果 [] , {} , new Object() , new Class() ,没有自身 和方法,返回 true
+	// 没有可枚举属性
 	isEmptyObject: function( obj ) {
 		var name;
+		// for in 只遍历自身属性 方法
 		for ( name in obj ) {
 			return false;
 		}
@@ -615,6 +619,7 @@ jQuery.extend({
 		return jQuery.merge( [], parsed.childNodes );
 	},
 	// 解析 json , str =>json ie8+
+	// ECMA5
 	parseJSON: JSON.parse,
 
 	// Cross-browser xml parsing
@@ -645,8 +650,10 @@ jQuery.extend({
 	noop: function() {},
 
 	// Evaluates a script in a global context
+	// 全局环境下的 script 
 	globalEval: function( code ) {
 		var script,
+				//eval 即是关键字 也是 window 的属性
 				indirect = eval; //相当于 window.eval  不同与 直接 eval('str')
 
 		code = jQuery.trim( code );
@@ -752,6 +759,7 @@ jQuery.extend({
 		if ( arr != null ) {
 			// isArraylike 只能判断 对象
 			// isArraylike ( OBject('hello'))  === true, 因为 Object 数组,会拆解成 一个个字符 
+			// isArraylike 只能判断对象
 			if ( isArraylike( Object(arr) ) ) {
 				jQuery.merge( ret,
 					typeof arr === "string" ?
@@ -770,7 +778,7 @@ jQuery.extend({
 		return arr == null ? -1 : core_indexOf.call( arr, elem, i );
 	},
 
-	//first 必须有 length属性, ?
+	//first 必须有 length属性, 或者数组
 	merge: function( first, second ) {
 		var l = second.length,
 			i = first.length,
@@ -784,6 +792,7 @@ jQuery.extend({
 			}
 		} else {
 			// 如果 second[数字] 属性的值不为空,将 second[数字值] 附给 first
+			// 类数组
 			while ( second[j] !== undefined ) {
 				first[ i++ ] = second[ j++ ];
 			}
@@ -814,6 +823,7 @@ jQuery.extend({
 	},
 
 	// arg is for internal usage only
+	// arg 内部使用
 	map: function( elems, callback, arg ) {
 		var value,
 			i = 0,
@@ -844,6 +854,7 @@ jQuery.extend({
 
 		// Flatten any nested arrays
 		// 避免复合数组 , 数组 和合并操作 可以解决 复合数组
+		// [].concat() 将2多维数组转成一维数组
 		return core_concat.apply( [], ret );
 	},
 
