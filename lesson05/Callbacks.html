@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第唔部分:line 2880,3041 </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Callback<small>jQuery.callbacks 回调对象，对函数统一管理 </small></h1>
+      <ol>
+        <li>Query.Callbacks是jquery在1.7版本之后加入的，是从1.6版中的_Deferred对象中抽离的，进行函数队列的add、remove、fire、lock等操作</li>
+        <li>
+          设计模式中的观察者模式的发布、订阅机制，目前Callbacks对象用于queue、ajax、Deferred对象中
+        </li>
+      </ol>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+      <pre>
+
+/**
+ * 'once memory' => {'once'=>true, 'memory'=>true}
+ */
+// string options => object object
+// 并且创建options 缓存
+function createOptions( options ) {
+  // 初始化 结果对象， 初始化 optionsCache[options] 元素
+  var object = optionsCache[ options ] = {};
+
+  // options 通过 空格 拆分，成数组遍历存放入 object 
+  jQuery.each( options.match( core_rnotwhite ) || [], function( _, flag ) {
+    object[ flag ] = true;
+  });
+  return object;
+}
+
+  /**
+   * jQuery 回调对象 pub/sub 模式
+   * @param options 配置参数
+   * 'once'
+   * 'memory'
+   * 'unique'
+   * 'setpOnFalse'
+   */
+jQuery.Callbacks = function ( options ){
+  
+  // 处理options
+  /**
+   * 通过 optionCache 处理并返回  相关options 对象
+   */
+  options;
+
+
+
+  // 定义变量
+  var 
+    memory,
+
+    fired, //是否出发过 私有函数fire
+
+    firing, // fire 触发进行状态 true 正在触发
+
+    firingStart,
+
+    firingLenth,
+
+    firingIndex,
+
+    list = [], // 最终存储函数的数组
+
+    // options.once = true, 则 stack = false
+    // 否则 stack = []
+    // 变量堆 先进先出
+    stack = !options.once && [],
+
+  /**
+   * 私有函数 fire
+   */
+  fire = function (data) {
+    // 变量为 memory状态开启时，将data 赋于 memory
+    memory = options.memory && data;
+
+    // fired 触发过fired
+    fired = true;
+
+    fireIndex = firingStart || 0; //当前fire 的位置
+    firingStart = 0; //fire 开始位置
+    firingLength = list.length; // fire 的长度
+
+     firing = ture; //开始触发，修改状态
+
+      // 遍历 list
+     for(; list && firingIndex < firingLentth; firingIndex ++ ) {
+      /**
+       * 如果返回值为false,并且设置 options.setOnFalse 为true 那么将跳出循环体
+       */
+      // data[0], 上下文, data[1],参数
+      if( list[firingIndex].apply(data[0], data[1])) === false && options.stopOnFalse ) {
+        memory = false; // ???
+        break;
+
+      }
+
+      firing = false; // fire 结束
+
+      if( list ) {
+        // 变量stack堆存在
+        if( stack ) {
+          // stack堆的length >= 1
+          if( stack.length ) {
+            fire( stack.shift() ); //递归 fire 堆中的元素
+          }
+
+        }else if( memory) {
+          // 参数设定 'once memory', 执行完fire后触发 list ＝ []
+          list = [];
+        }else {
+          // 参数只设定 'once',执行完fire后触发 self.disable()
+          self.disable();
+        }
+      }
+
+
+
+     }
+
+
+
+  }
+
+  /** 
+   * 最终输出对象，Module模式
+   * 
+   */
+  self = {
+    add(): 添加到 私有变量list 数组中
+    // 判断 list ＝ [] , 返回真
+    if( list ) {
+      var start = list.length; //当前list 长度
+
+        // add函数自执行
+        // 针对 $.Callbacks().add(foo1, foo2);
+      （function add(args） {
+          
+            //遍历 arguments
+          jQuery.each(args, function(_, arg){
+            if(arg 类型为 function) {
+
+              /**
+               * 参数包含unique
+               * !option.unique (没有设置unique)  
+               *或者
+               * !self.has(arg) list中没有该方法
+               */
+              if( !option.unique || !self.has(arg) ) {
+                list.push(arg);
+              }
+            }else if( arg 类型为 类数组 ){
+              // 支持写法 $.Callbacks.add([foo1,foo2]);
+              add(arg) // 递归
+            }
+
+            if(firing){
+              //在fire 过程中执行self.add
+              firingLength = list.length; //重新赋值 firingLength;
+
+            }else if(memory) {
+              如果memory被设置的化，add,完毕直接执行fire
+
+              firingStart = start;
+              fire(memory);
+            }
+
+          })
+
+        })( arguments ); // arguments is here
+
+
+        
+      }
+
+      return this; // 支持链式操作
+      }
+
+    remove(): 删除 splice list某个元素
+      function () {
+        if( list ) {
+          // jQuery迭代遍历 arguments
+         jQuery.each (arguments ,function( _, arg)) {
+            var index; // 数组key
+            // 判断对象存在数组中，index = 存在位置
+            while() {
+
+              list.splice( index, 1); // 去除目标元素
+
+               /**
+                * firing 操作
+                */
+               if(firing) {
+                // 在执行fire迭代 执行list 函数时
+                if( index <= firingLength) {
+                  // 如果当前元素 小于等于 firingLengt 时
+                  firingLength--;
+                }
+
+                if( index <= firingIndex) {
+                  // 如果当前元素 小于等于 firingIndex 时
+                  firingIndex--;
+
+                }
+               }
+               
+            }
+         }
+
+        }
+
+      }
+
+    has(): 元素是否存在 list 中,无参数时判断 list 是否有值
+      function (fn) {
+        return fn ? 
+          jQUery.inArray(fn, list) > -1 : // fn 是否存在 list 中
+          !!(list && list.lentth); //fn 为 false ,判断list 是否存在元素
+      }
+
+    empty(): 清空list
+      function () {
+        list = [];
+        firingLenth = 0; //并且将firingLenth ＝0 fire 会中止
+      }
+
+
+    disable(): 禁用,清除所有list,stack,memory
+      // 对正在fire 的影响不会影响 私有函数 fire ,但是会影响self.fireWith
+      list = stack = memory = undefined;
+      return this;
+
+    disabled():查看是否禁用
+      return !list;
+
+    lock(): // 锁住,相当于开启once
+      function() {
+        stack =undefined;
+          //如果没有设置memory 则等同于开启 diabled();
+        if( !memory ) {
+          self.disable();
+        }
+      }
+
+
+    locked(): 查看是否被锁定
+      return !stack;
+
+    fireWith():
+      function( context /*上下文*/, args) {
+
+        // 如果 option.once 为true,stack = false, 否则为 []
+        // 没有 fire过, 或者 stack 为 true
+        // options.once 生效 条件
+        if( list && (!fired || stack ) ) {
+          args = args || []; // args容错
+
+          /**
+           * 组装新的args
+           * [上下文, args转成数组 or 直接为arg ]
+           */
+          args = [context, args.slice ? args.slice() : args];
+
+          if(firing) {
+            // firing =true 的时，正在触发 私有函数 fire
+            // 将args push 到 stack堆(先进先出) 中
+            stack.push( args );
+          }else {
+            fire( args ); //$.Callbacks私有方法 fire
+          }
+
+        }
+
+      }
+
+    fire(): =>self.fireWith() => 私有函数fire()
+      function() {
+        self.fireWith( this, arguments);
+        return this;
+      }
+
+    fired():判断是否正在firing
+      return !!fired;
+
+  }
+
+  return self;
+
+}
+      </pre>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 34.439%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>34.439% 进度 代码共8830行/3041行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
+<script>
+  $.log('-- Callbacks基本使用,订阅发布模式 --');
+
+  var callObj1 = $.Callbacks();
+  function foo1 ( ) {
+    console.log(' in foo 1');
+    return false;
+  }
+
+  function foo2 ( ) {
+    console.log(' in foo 2');
+  }
+
+  function foo3 ( ){
+    console.log(' in foo 3');
+  }
+
+  callObj1.add(foo1).add(foo2).add( foo3 );
+
+  callObj1.remove( foo2 ); // 删除操作
+
+  // 发布
+  callObj1.fire();
+
+  // 写法2  CallObj1.add(foo1, foo2, foo3)
+  // 写法3  CallObj1.add([foo1, foo2])
+
+  // 参数 once
+  /**
+   * 作用在fire
+   */
+  $.log(' --参数：once--');
+  var callOnce = $.Callbacks('once');
+
+  callOnce.add(foo1);
+  callOnce.fire();
+  callOnce.fire();
+
+  /**
+   * 参数：memory作用在 add
+   */
+  $.log(' --参数：memory--');
+  var callMemory = $.Callbacks('memory');
+  var noArg = $.Callbacks();
+  $.log('--普通add(foo1).fire().add(foo2)--');
+  // 只有通过fire()触发，list里的函数
+  noArg.add(foo1).fire().add(foo2); // 只调用foo1
+  $.log('--memory add(foo1).fire().add(foo2)--');
+  callMemory.add(foo1).fire().add(foo2); //调用foo1 和 foo2
+
+  /**
+   * 参数：unique 作用在add
+   */
+  $.log('--参数:unique--');
+  var Callunique = $.Callbacks('unique');
+  var nounique = $.Callbacks();
+  $.log('没有去重');
+  nounique.add(foo1).add(foo1).fire();
+  $.log('去重');
+  Callunique.add(foo1).add(foo1).fire();
+
+  /**
+   * 参数 setpOnFalse 作用在for 循环
+   */
+  $.log('--参数:stopOnFalse--');
+  var CallonFalse = $.Callbacks('stopOnFalse');
+  CallonFalse.add(foo1).add(foo2).fire();
+
+  /**
+   * 参数可以组合方式传递参数
+   */
+  $.log('--参数组合--');
+  var multiCallObj = $.Callbacks('memory stopOnFalse');
+  multiCallObj.add(foo2).fire().add(foo1).add(foo2);
+
+  /**
+   * 通过fire() 传递参数
+   */
+  $.log('--通过fire 传递参数--');
+  function foo5 (n) {
+    $.log('arg:'+n);
+  }
+  var CallArg = $.Callbacks();
+  CallArg.add(foo5).fire(' arginfoo5');
+
+  /**
+   * self.has 方法
+   */
+  $.log('--self.has方法--');
+  $.log(multiCallObj.has(foo1), $.Callbacks().has());
+
+
+
+
+</script>

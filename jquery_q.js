@@ -871,7 +871,7 @@ jQuery.extend({
 
 		// 对应实现案例  $(document).click(function(){ $.proxy(obj,'show')});
 		// 解释案例:  使得 obj.show 的方法 依然 this 指向 obj,
-		// 等同于 $.pox(obj.show, obj)
+		// 等同于 $.proxy(obj.show, obj)
 		if ( typeof context === "string" ) {
 			tmp = fn[ context ];
 			context = fn;
@@ -886,6 +886,8 @@ jQuery.extend({
 		}
 
 		// Simulated bind
+		// 处理 参数
+		// args 获取 除去 fn, context 之外的参数
 		args = core_slice.call( arguments, 2 );
 		proxy = function() {
 			return fn.apply( context || this, args.concat( core_slice.call( arguments ) ) );
@@ -895,6 +897,7 @@ jQuery.extend({
 		// 设置唯一的标识
 		proxy.guid = fn.guid = fn.guid || jQuery.guid++;
 
+		// 返回一个匿名函数，没有返回 fn.apply(.....)
 		return proxy;
 	},
 
@@ -903,15 +906,27 @@ jQuery.extend({
 	// 内部 对 多功能值操作, 和回调
 	// css() , attr() 能 set/能get 功能
 	// 参数: 集合 ,回调函数 ,key ,value , 设置/获取
+	/**
+	 * 内部对多功能值对操作 如css('width') css({width:'100px'}) css('width':'200px')
+	 * @param   elems   集合
+	 * @param   fn      执行函数
+	 * @param   key     对应 'width' 操作属性,
+	 * @param  value    设置对值
+	 * @param   chainable 是否为设置模式 true 是
+	 * @param  {[type]}   emptyGet  [description]
+	 * @param  {[type]}   raw       [description]
+	 * @return {[type]}             [description]
+	 */
 	access: function( elems, fn, key, value, chainable, emptyGet, raw ) {
+		// 定义变量 获取集合长度 key 是否为空
 		var i = 0,
 			length = elems.length,
 			bulk = key == null;
 
 		// Sets many values
-		// 设置多个值,
+		// 当key 为json 时，则为设置多个值
 		if ( jQuery.type( key ) === "object" ) {
-			// kye为对象,直接开启 设置模式
+			// kye为多组值, 直接开启 设置模式
 			chainable = true;
 			for ( i in key ) {
 				// 递归 函数, 知道成为 单个值的设置
@@ -928,7 +943,7 @@ jQuery.extend({
 				raw = true;
 			}
 
-			// key 不等与 空
+			// 没有key值
 			if ( bulk ) {
 				// 且 value 不是函数
 				// Bulk operations run against the entire set
@@ -977,14 +992,17 @@ jQuery.extend({
 	swap: function( elem, options, callback, args ) {
 		var ret, name,
 			old = {};
+			// old 集合
 
 		// Remember the old values, and insert the new ones
 		// 遍历存旧的样式
+		// 并且放入新的样式
 		for ( name in options ) {
 			old[ name ] = elem.style[ name ];
 			elem.style[ name ] = options[ name ];
 		}
-		//执行函数
+
+		// 执行函数 比如获取元素宽度
 		ret = callback.apply( elem, args || [] );
 
 		// Revert the old values
@@ -993,6 +1011,7 @@ jQuery.extend({
 			elem.style[ name ] = old[ name ];
 		}
 
+		// 返回执行结果
 		return ret;
 	}
 });
@@ -1031,18 +1050,23 @@ jQuery.each("Boolean Number String Function Array Date RegExp Object Error".spli
 	class2type[ "[object " + name + "]" ] = name.toLowerCase();
 });
 
+// 判断是否类数组
 function isArraylike( obj ) {
+	// 获取length
 	var length = obj.length,
 		type = jQuery.type( obj );
 
+	// 排除window对象
 	if ( jQuery.isWindow( obj ) ) {
 		return false;
 	}
 
+	// 元素节点
 	if ( obj.nodeType === 1 && length ) {
 		return true;
 	}
 
+	// 函数也可以有length
 	return type === "array" || type !== "function" &&
 		( length === 0 ||
 		typeof length === "number" && length > 0 && ( length - 1 ) in obj );
@@ -3031,10 +3055,18 @@ jQuery.contains = Sizzle.contains;
 })( window );
 // String to Object options format cache
 var optionsCache = {};
+/**
+ * {
+ * 	'once memory'=>{once:true,memory=>true}
+ * }
+ */
 
 // Convert String-formatted options into Object-formatted ones and store in cache
 function createOptions( options ) {
 	var object = optionsCache[ options ] = {};
+
+	// core_rnotwhite = /\S+/g 匹配单词，通过空格分割开
+
 	jQuery.each( options.match( core_rnotwhite ) || [], function( _, flag ) {
 		object[ flag ] = true;
 	});
@@ -3081,18 +3113,25 @@ jQuery.Callbacks = function( options ) {
 	var // Last fire value (for non-forgettable lists)
 		memory,
 		// Flag to know if list was already fired
+		// 是否fire过 ture为fire过
 		fired,
 		// Flag to know if list is currently firing
+		// fire状态, true 正在 fire 过程
 		firing,
 		// First callback to fire (used internally by add and fireWith)
+		// fire 开始的偏移量
 		firingStart,
 		// End of the loop when firing
 		firingLength,
 		// Index of currently firing callback (modified by remove if needed)
+		// 当前 fire位置
 		firingIndex,
 		// Actual callback list
+		// 回调函数存放的数组
 		list = [],
 		// Stack of fire calls for repeatable lists
+		// options.once = true, 则 stack = false
+		// 否则 stack = []
 		stack = !options.once && [],
 		// Fire callbacks
 		// fire 执行时按照 顺序执行
@@ -3100,6 +3139,7 @@ jQuery.Callbacks = function( options ) {
 			memory = options.memory && data;
 			//触发过 fire方法
 			fired = true;
+			// fire 当前元素的位置
 			firingIndex = firingStart || 0;
 			firingStart = 0;
 			firingLength = list.length;
@@ -3117,9 +3157,11 @@ jQuery.Callbacks = function( options ) {
 					if ( stack.length ) {
 						fire( stack.shift() );
 					}
+					// 参数设定 'once memory', 执行完fire后触发 list ＝ []
 				} else if ( memory ) {
 					list = [];
 				} else {
+					// 参数只设定 'once',执行完fire后触发 self.disable()
 					self.disable();
 				}
 			}
@@ -3166,6 +3208,7 @@ jQuery.Callbacks = function( options ) {
 			// Remove a callback from the list
 			remove: function() {
 				if ( list ) {
+					// 遍历 arguments对象
 					jQuery.each( arguments, function( _, arg ) {
 						var index;
 						//判对象 是否存在与 数组中,返回存在位置

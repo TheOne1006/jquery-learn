@@ -96,14 +96,17 @@ grep() : 过滤数组
 map() : map 映射新数组
 
 
-guid: 与事件相关
+guid: 与事件相关,函数标识
 
 
-proxy() : ?
+proxy() : 改变this 指向，修改上下文
 
-access() : ?
 
-swap() : ?
+access() : 多功能的值操作
+
+now: Date.now(); 时间戳 毫秒数
+
+swap() : css 交换，（内部）
 
 
 })
@@ -121,7 +124,120 @@ swap() : ?
   // newArray => ['2','3',4]
 
 </pre>
+      <h4>
+        $.proxy()用法案例
+      </h4>
+<pre>
+  function show(){
+    console.log(this);
+  }
 
+  show(); // "[object Window]"
+
+  $.proxy(show, document)(); // "[object HTMLDocument]"
+
+  // 传参处理
+  $.proxy(show,document, arg1, arg2)( arg3, arg4 )
+
+  // 用法3 简化 指向 this
+  var obj = {
+    
+    show: function () {
+      console.log( this.toString() );
+    }
+  }
+
+  /**
+   * 调用obj的 方法作为click 事件方法
+   */
+  $('#p1').click( obj.show ); //"[object HTMLParagraphElement]"
+
+  // 修改指向到 obj 的方法
+
+  $('#p1').click( $.proxy(obj.show, obj) );
+
+  // 简写
+  $('#p1').click(  $.proxy(obj,'show') );
+
+  // 闭包
+  $('#p1').click(function(){
+    obj.show();
+  });
+</pre>
+
+<h4>
+  $.proxy 伪代码
+</h4>
+<pre>
+  proxy: function ( fn, context ) {
+    // 定义变量 
+    var tmp, args, proxy;
+
+    // 检测到 context ，支持简写模式, $.proxy(obj, 'show')
+    if( typeof context  === 'string') {
+
+      // 转换成 $.proxy(obj.show, obj);
+
+    }
+
+    // 判断 fn
+    if( fn 不是一个 函数){
+
+      return undefined;
+    }
+
+    // args 获取, 除去 fn, context 之外的参数
+
+    // 函数表达式
+    proxy = function () {
+      ....
+
+      return fn.apply( context ....)
+      args.concat( core_slice.call( arguments );
+
+      // 闭包传递参数，带入 fn 中
+
+    }
+
+    proxy.guid  // 设置唯一标识符
+
+    return proxy; //  返回 表达式为proxy 的匿名函数
+  }
+</pre>
+
+  <a href="http://jsbin.com/roteho/2/edit?html,js,console,output">
+    jQuery proxy 案例链接
+  </a>
+
+<h4>
+  $.swap()
+</h4>
+<pre>
+  
+</pre>
+
+
+
+<div class="test">
+  <div id='aa' style="width:300px;display:none">
+    
+  </div>
+
+  <div id='bb' style="width:300px;display:block;visibility:hidden;position:absoulte">
+    123
+  </div>
+</div>
+
+<script>
+  console.log('--原生获取none 的样式--');
+  console.log( $('#aa').get(0).offsetWidth );
+  console.log( $('#aa').css('width') );
+
+  console.log('--原生获取none 的样式--');
+  console.log( $('#bb').get(0).offsetWidth );
+  console.log( $('#bb').css('width') );
+
+</script>
 
       </div>
     </div>
@@ -131,8 +247,8 @@ swap() : ?
     <div class='row'>
       <div class="col-md-12">
         <div class="progress">
-          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.039%;">
-            <span style='min-width: 20px;color:#ccc'>0.039% 进度 代码共8830行/348行</span>
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0.978%;">
+            <span style='min-width: 20px;color:#ccc'>0.978% 进度 代码共8830行/864行</span>
           </div>
         </div>
       </div>
