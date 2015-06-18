@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第六部分:line 3042, </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Deferred<small>jQuery.Deferred 延迟对象，对异步的统一管理 </small></h1>
+      <ol>
+        <li> 基于jQuery.Callbacks</li>
+      </ol>
+      <h3> 内部 promise 和 deferred 对象</h3>
+      <div class="row">
+        <div class="col-md-6">  
+          <fieldset data-obj='promise'>
+            <legend> promise </legend>
+            <ul>
+              <li>state()</li>
+              <li>always()</li>
+              <li>then()</li>
+              <li>promise()</li>
+              <li>pipe()</li>
+
+              <!-- jQuery.each 遍历tuples -->
+              <li>done()</li>
+              <li>fail()</li>
+              <li>progress()</li>
+
+            </ul>
+        </fieldset>
+        </div>
+        <div class="col-md-6">
+          <fieldset data-obj='deferred'>
+            <legend>deferred</legend>
+            <ul>
+              <!-- jQuery.each 遍历tuples -->
+              <li><em>resolve()</em></li>
+              <li><em>reject()</em></li>
+              <li><em>notify()</em></li>
+
+              <!-- 等同于 list.fireWith,没有参数的fireWith -->
+              <li>resolveWith</li>
+              <li>rejectWith</li>
+              <li>notifyeWith</li>
+
+              <!-- promise.promise(deferred)扩展 jQuery.extend(deferred, promise); -->
+              <!-- 扩展promise对象上到方法属性引用到deferred上 -->
+              <li>state()</li>
+              <li>always()</li>
+              <li>then()</li>
+              <li>promise()</li>
+              <li>pipe()</li>
+
+              <li>done()</li>
+              <li>fail()</li>
+              <li>progress()</li>
+
+            </ul>
+          </fieldset>
+        </div>
+      </div>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+      <pre>
+jQuery.extend(
+
+  // 扩展工具方法 Deferred
+  Deferred: function (func) {
+
+    //变量声明
+    /**
+     * 创建 数组，储存映射关系,以及创建相应的回调对象
+     * [ 回调对象的 fire,  add方法 , 对应的延迟对象,状态 ]
+     */
+    var tuples = [
+      [ "resolve", "done", jQuery.Callbacks("once memory"), "resolved" ],
+      [ "reject", "fail", jQuery.Callbacks("once memory"), "rejected" ],
+      [ "notify", "progress", jQuery.Callbacks("memory") ]
+    ],
+
+    state ＝ 'pending', // 私有变量 状态 pending(未发生)
+
+    /**
+     * promise 对象
+     */
+    promise = {
+      state(): 返回私有变量 state; 'pending' => 'resolved' or 'rejected' 
+
+      always(): resolve or reject 都执行
+        function( ) {
+          deferred.done( arguments ).fail( arguments );
+        }
+
+      then():
+
+      /**
+       * 功能1 扩展promise对象到 deferred 身上(内部)
+       * 功能2 返回promise 对象到外部(作用:外部将无法通过'resolve'等改变状态，因为promise 没有这些功能)
+       */
+      promise():
+      function ( obj ) {
+        return obj != null ?jQuery.extend( obj, promise);
+      }
+
+
+    },
+
+    deferred = {};
+
+    // 兼容老版本,功能不一样
+    /**
+     * pipe 管道符号
+     */
+    promise.pipe = promise.then;
+
+    // 遍历对应关系数组,进行绑定
+    jQuery.each( tuples, function( i, tuple) {
+
+      var list = tuple[2], //jQuery.Callback(),回调对象
+
+      /**
+       * 状态值
+       * stateString为 'resolved' or 'rejected' or undefined
+       */
+        stateString = tuple[3];
+
+      // 绑定 done , fail , progress 等同于 回调对象的add方法
+      promise[ tuple[1] ] = list.add;
+
+  
+      // 如果 stateString 的 布尔值为 true, 添加三个触发函数
+      if( stateString ) {
+        list.add(function(){
+          /**
+           * 修改私有变量state 为 [resolved | rejected]
+           */
+          state = stateString;
+
+          /**
+           * ^运算,1^1 等于 0, 0^1 等于1
+           * 禁用除自身和 notify 的回调对象
+           */
+        }, tuples[i^1][2].disable, 
+          /**
+           * 锁住 notify 的回调对象，只能add？
+           */
+          tuples[2][2].lock
+        )
+      }
+
+
+
+
+      // 对应 resolve , reject , notify 映射于 回调对象的fireWidth 方法 
+      deferred[ tuple[0] ] = function () {
+        deferred[ tuple[0] + "With" ]( this === deferred ? promise : this, arguments );
+
+        return this;
+      };
+
+      deferred[ tuple[0] + "With"] = list.fireWith;
+      /**
+       *  以上两步可以解释为
+       ```
+       deferred.resolve = function(
+        deferred.resolveWith (this === deferred?promise: this, arguments);
+
+        return this;
+       )
+       deferred.resolveWith = list.fireWith;
+
+       ```
+       *
+       */
+
+      
+
+    });
+
+
+    /**
+     * jQuery.extend(deferred, promise);
+     */
+    promise.promise(deferred);
+
+    /**
+     * 主要针对
+     * pipe 方法
+     * 执行函数方法，并将deferred 作为this, 和第一个参数传进去
+     */
+    if( func) {
+      func.call( deferred, deferred)
+    }
+
+    return deferred;
+
+  },
+  // 扩展工具方法 when 辅助于Deferred
+  when( ) {
+    
+  }
+
+)
+
+      </pre>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 34.439%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>34.439% 进度 代码共8830行/3041行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>

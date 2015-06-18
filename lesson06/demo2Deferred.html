@@ -1,0 +1,119 @@
+<html>
+<!DOCTYPE html>
+<head>
+  <title>jQuery源码学习 - Deferred 案例2 </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Deferred 案例<small>jQuery.Deferred 延迟对象，对异步的统一管理 </small></h1>
+      <ol>
+       
+      </ol>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+        <h4> 内部的promise 对象 和 deferred</h4>
+        <ul>
+          <li>若想在外部$.deferred() 不被修改,可返回内部的promise对象</li>
+        </ul>
+        <script>
+          function success () {
+            $.log('成功');
+          }
+          function fail () {
+            $.log('失败');
+          }
+
+          function getPromise() {
+            // 实际返回 内部的deferred
+            var def = $.Deferred();
+
+            // 一秒钟后执行 def.resolve 状态解决
+            setTimeout(function(){
+              def.resolve();
+            },1000);
+
+            // 通过promise（） 方法 返回promise 对象,promise 对象中没有触发改变状态的方法
+            return def.promise();
+          }
+          var mypromise = getPromise();
+
+          mypromise.done(success).fail(fail);
+
+          // 内部promise 没有 reject() resolve() 和 notify()
+          if(mypromise.hasOwnProperty('reject')){
+            mypromise.reject();
+          }
+          /**
+           * 输出结果 ＝>成功
+           */
+
+
+          function getDef () {
+            // 实际返回 内部的deferred
+            var def = $.Deferred();
+
+            // 一秒钟后执行 def.resolve 状态解决
+            setTimeout(function(){
+              def.resolve();
+            },1000);
+
+            // 返回内部deferred 方法，外部可以触发 状态改变 
+            return def;
+          }
+
+          getDef().done(success).fail(fail).reject();
+          /**
+           * 输出结果 =>失败
+           */
+
+        </script>
+
+        <hr/>
+
+        <h4>
+          deferred.then 方法都使用
+          defObj.then(成功方法, 失败方法, 进度中方法)
+        </h4>
+        <script>
+
+          var myPromise2 = getPromise();
+
+          myPromise2.then(function(){
+            $.log('in-then-done');
+          },function(){
+            $.log('in-then-fail');
+          },function(){
+            $.log('in-then-progress');
+          });
+
+        </script>
+
+
+      </div>
+    </div>
+
+
+  </div>
+
+
+</body>
+</html>

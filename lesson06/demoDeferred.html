@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - Deferred 案例 </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Deferred 案例<small>jQuery.Deferred 延迟对象，对异步的统一管理 </small></h1>
+      <ol>
+       
+      </ol>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+        <h4>案例一: 解决－》执行 </h4>
+        <script>
+          var resDef = $.Deferred();
+          setTimeout(function() {
+          $.log('-- 案例一  --');
+            $.log('case 1: in settimeout');
+            resDef.resolve();
+          },1);
+          resDef.done(function() {
+            $.log('in 延迟对象done');
+          });
+        </script>
+        <h4>
+          案例二: 拒绝－》失败
+        </h4>
+        <script>
+          var rejDef = $.Deferred();
+          setTimeout( function() {
+          $.log('-- 案例二 --');
+            $.log('rejDef in setTimeout');
+            rejDef.reject();
+          },1);
+          rejDef.fail(function() {
+            $.log(' rejDef fail first');
+          });
+          rejDef.fail(function() {
+            $.log(' rejDef fail agin');
+          });
+        </script>
+
+        <h4>
+          案例三: 通知－》进度
+        </h4>
+        <script>
+          var notDef = $.Deferred();
+          setTimeout( function() {
+          $.log('-- 案例三 --');
+            $.log('notDef in setTimeout');
+
+            notDef.progress(function() {
+              $.log(' notDef progress 20%');
+            });
+          
+            notDef.notify();
+          },1);
+          notDef.progress(function() {
+            $.log(' notDef progress 10%');
+          });
+        </script>
+      </div>
+    </div>
+
+
+  </div>
+
+
+</body>
+</html>

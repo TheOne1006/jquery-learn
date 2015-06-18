@@ -3295,11 +3295,14 @@ jQuery.Callbacks = function( options ) {
 	return self;
 };
 jQuery.extend({
-
+// jQuery 延迟对象
 	Deferred: function( func ) {
+		//映射关系 数组
 		var tuples = [
 				// action, add listener, listener list, final state
-				//[ 状态fire,  add方法  ]
+				// $.Callback.fire 对应 resolve解决 reject拒绝 notify通知 
+				// $.Callback.add 对象 done 完成执行 fail失败执行 progress 进度执行
+				//[ 回调对象的 fire,  add方法  ]
 				[ "resolve", "done", jQuery.Callbacks("once memory"), "resolved" ],
 				[ "reject", "fail", jQuery.Callbacks("once memory"), "rejected" ],
 				[ "notify", "progress", jQuery.Callbacks("memory") ]
@@ -3337,6 +3340,8 @@ jQuery.extend({
 				},
 				// Get a promise for this deferred
 				// If obj is provided, the promise aspect is added to the object
+				// 功能1 扩展内部 deferred 对象，将promise 对象所有方法扩展到  deferred 对象上,
+				// 功能2 返回内部 promise对象(没有改变状态功能)
 				promise: function( obj ) {
 					return obj != null ? jQuery.extend( obj, promise ) : promise;
 				}

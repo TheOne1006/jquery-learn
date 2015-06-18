@@ -1,0 +1,92 @@
+<html>
+<!DOCTYPE html>
+<head>
+  <title>jQuery源码学习 - Deferred 案例3 </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Deferred 案例<small>jQuery.Deferred 延迟对象，对异步的统一管理 </small></h1>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+        <h4> $.Deferred().then() 方法 与 $.Deferred().pipe()</h4>
+        <h5>then用法</h5>
+        <p>
+          then() 与 pipe()代码完全相同,但是功能却不同。
+        </p>
+        <script>
+          function success () {
+            $.log('成功');
+          }
+          function fail () {
+            $.log('失败');
+          }
+
+          function getDef(){
+            var def = $.Deferred();
+
+            setTimeout(function(){
+              def.resolve();
+            },1000);
+
+            return def.promise();
+          }
+
+          var thenDef = getDef();
+          // then 传递三个函数，分别对应  done, fail, progress
+          thenDef.then(success, fail);
+          
+        </script>
+        <hr/>
+        <h5>
+          pipe 用法
+        </h5>
+        <p>
+          pipe 管道,让延迟对象延长，返回另一个延迟对象 
+        </p>
+        <script>
+          var pipeOneDef = getDef();
+
+
+          pipeOneDef
+            .pipe()
+            .done(function(){
+              $.log('success in pipeOne');
+            })
+            .fail(function() {
+              $.log('fail in pipeOne');
+            });
+
+        </script>
+        <script>
+
+        </script>
+
+
+      </div>
+    </div>
+
+
+  </div>
+
+
+</body>
+</html>
