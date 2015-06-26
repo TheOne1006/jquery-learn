@@ -914,7 +914,7 @@ jQuery.extend({
 	 * @param  value    设置对值
 	 * @param   chainable 是否为设置模式 true 是
 	 * @param  {[type]}   emptyGet  [description]
-	 * @param  {[type]}   raw       [description]
+	 * @param  {[type]}   raw       value 是否为函数,true 不是函数
 	 * @return {[type]}             [description]
 	 */
 	access: function( elems, fn, key, value, chainable, emptyGet, raw ) {
@@ -3406,6 +3406,8 @@ jQuery.extend({
 			remaining = length !== 1 || ( subordinate && jQuery.isFunction( subordinate.promise ) ) ? length : 0,
 
 			// the master Deferred. If resolveValues consist of only a single Deferred, just use that.
+			// 内部deferred 对象，如果参数仅为一个时，将参数赋值给deferred
+			// 如果不是，则创建新的$.Deferred()
 			deferred = remaining === 1 ? subordinate : jQuery.Deferred(),
 
 			// Update function for both resolve and progress values
@@ -3425,6 +3427,7 @@ jQuery.extend({
 
 		// add listeners to Deferred subordinates; treat others as resolved
 		if ( length > 1 ) {
+			// 数组长度为 length, 值均为undefined
 			progressValues = new Array( length );
 			progressContexts = new Array( length );
 			resolveContexts = new Array( length );
@@ -3488,6 +3491,10 @@ jQuery.support = (function( support ) {
 
 	// Make sure checked status is properly cloned
 	// Support: IE9, IE10 克隆一个 被选中的 checkbox  是false, 其他 为 true
+	/**
+	 * 让复选框选中
+	 * 克隆一分 选中的复选框，ie9,10 克隆的复选框没有被选中
+	 */
 	input.checked = true;
 	support.noCloneChecked = input.cloneNode( true ).checked;
 
@@ -3667,7 +3674,7 @@ Data.prototype = {
 			}
 		}
 
-		// Ensure the cache object
+		// Ensure the cache object 确保缓存对象
 		if ( !this.cache[ unlock ] ) {
 			this.cache[ unlock ] = {};
 		}
@@ -3837,6 +3844,7 @@ jQuery.fn.extend({
 			if ( this.length ) {
 				data = data_user.get( elem );
 
+				//- 兼容 元素data-val属性 信息
 				if ( elem.nodeType === 1 && !data_priv.get( elem, "hasDataAttrs" ) ) {
 					attrs = elem.attributes;
 					for ( ; i < attrs.length; i++ ) {
@@ -3992,6 +4000,7 @@ jQuery.extend({
 			};
 
 		// If the fx queue is dequeued, always remove the progress sentinel
+		// animate 自动出队
 		if ( fn === "inprogress" ) {
 			fn = queue.shift();
 			startLength--;
@@ -4001,6 +4010,7 @@ jQuery.extend({
 
 			// Add a progress sentinel to prevent the fx queue from being
 			// automatically dequeued
+			// animate 自动出队
 			if ( type === "fx" ) {
 				queue.unshift( "inprogress" );
 			}
@@ -4046,6 +4056,7 @@ jQuery.fn.extend({
 				var queue = jQuery.queue( this, type, data );
 
 				// ensure a hooks for this queue
+				// 创建钩子方法
 				jQuery._queueHooks( this, type );
 
 				if ( type === "fx" && queue[0] !== "inprogress" ) {
@@ -4053,6 +4064,7 @@ jQuery.fn.extend({
 				}
 			});
 	},
+	// 遍历元素执行 出队操作
 	dequeue: function( type ) {
 		return this.each(function() {
 			jQuery.dequeue( this, type );
@@ -4060,7 +4072,14 @@ jQuery.fn.extend({
 	},
 	// Based off of the plugin by Clint Helfers, with permission.
 	// http://blindsignals.com/index.php/2009/07/jquery-delay/
+	/**
+	 * 出队延迟
+	 * time 延迟时间
+	 * type 队列type
+	 * jQuery.fx.speeds = 	{slow: 600,fast: 200,_default: 400}
+	 */
 	delay: function( time, type ) {
+		// 尝试获取 fx.speeds的值
 		time = jQuery.fx ? jQuery.fx.speeds[ time ] || time : time;
 		type = type || "fx";
 

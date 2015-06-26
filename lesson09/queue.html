@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第八部分:line 3653,3797</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>queue<small>队列 </small></h1>
+      <ol>
+        <li>
+          队列中只能存储函数
+        </li>
+        <li>
+          目的:
+        </li>
+      </ol>
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small>$.queue 工具方法</small> </legend>
+            <ul>
+              <li>queue( )</li>
+              <li>dequeue( )</li>
+              <li>_queueHooks( )</li>
+            </ul>
+          </fieldset>
+        </div>
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small>$.fn.queue 实例方法</small> </legend>
+            <ul>
+              <li>queue( )</li>
+              <li>dequeue( )</li>
+              <li>delay( )</li>
+              <li>clearQueue( )</li>
+              <li>promise( )</li>
+            </ul>
+          </fieldset>
+        </div>
+      </div>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+<pre>
+// 工具方法扩展
+jQuery.extend({
+  queue():
+    /**
+     * elem 元素
+     * type 值默认 'fxqueue'
+     * 
+     */
+    function(elem, type, data) {
+      // 私有变量
+      var queue;
+
+      // 容错只有元素存在才能正常进行
+      if(elem) {
+        type = (type || 'fx')+'queue'; // type 容错,默认值
+
+        // data_prev 内部的 Data操作,获取对应的信息
+        queue = data_prev.get(elem, type);
+
+
+        // 有data 设置 queue
+        if( data ) {
+        //Data.prototype.access: function( owner, key, value ){ return value; // 在有value 的情况下}
+          /**
+           * 如果queue 没有值,或者 data 是个数组
+           * queue 将会被重新赋值,因为 data_prev.access 返回value
+           * 即Data.prototype.cache[type]也被重新赋值,因为makeArray(data)数组
+           */
+          if ( !queue || jQuery.isArray( data ) ) {
+            queue = data_priv.access( elem, type, jQuery.makeArray(data) );
+          } else {
+            // 添加数组
+            queue.push( data );
+          }
+
+        }
+
+        return queue || [];
+      }
+    }
+
+  dequeue():
+  function(elem, type){
+    // 容错 默认type
+    type = type || 'fx';
+
+    // 获取jQuery.queue 中的queue
+    var queue = jQuery.queue( elem, type),
+    // queue 的长度
+    startLength = queue.length,
+    // fn queue[0]
+    fn = queue.shift(),
+    // 返回一个Callback对象,主要功能清除多余数据
+    hooks = jQuery._queueHooks(elem, type),
+    // next 函数,再次调用 jQuery.dequeue();
+    next = function(){
+      jQuery.dequeue(elem, type);
+    };
+
+    // animate 自动出队
+    if ( fn === "inprogress" ) {
+      fn = queue.shift();
+      startLength--;
+    }
+
+    if ( fn ) {
+      // animate 自动出队
+      if ( type === "fx" ) {
+        queue.unshift( "inprogress" );
+      }
+
+      // ???
+      delete hooks.stop;
+
+      // 执行fn 第一个参数是 next()
+      fn.call( elem, next, hooks );
+    }
+    
+    // 执行清除 多余数据的任务
+    if ( !startLength && hooks ) {
+      hooks.empty.fire();
+    }
+
+
+  }
+
+  _queueHooks(): 私有方法
+  function (elem, type) {
+    var key = type+'queueHooks';
+    // 返回一个 存在 Data 中的 Callbacks 对象,这个对象add一个 删除 元素在 Data type+'queue' 和 type+'queueHooks' 中的数据
+    return data_priv.get(elem, key) || data_priv.access( elem, key, {
+      empty: jQuery.Callbacks("once memory").add(function() {
+        data_priv.remove( elem, [ type + "queue", key ] );
+      })
+    });
+  }
+
+});
+
+/**
+ * jQuery.实例方法
+ */
+jQuery.fn.extend({
+  queue():
+  function(type , data) {
+
+  //- 设置变量, 变量个数参照值
+  var setter = 2;
+
+  /**
+   * 判断type 类型不等于 'string'
+   * 一个参数时，可能是函数或者数组
+   * 参数忽略，默认 type 为 'fx'
+   */
+  if (typeof type !== 'string') {
+    data = type; //参数缺省
+    type = 'fx'; //type 默认值为 fx
+    setter--;
+  }
+
+  /**
+   * 如果argument.length 小于 setter 
+   * 如果 type 类型为 string,并且没有 data 参数
+   * 为获取 queue 信息
+   */
+  if(argument.length < setter)
+  {
+    return jQuery.queue(this[0],type);
+  }
+
+  /**
+   * 如果data 参数 === undefined 则返回 this 对象
+   * 有则开始遍历元素进行设置
+   * 
+   */
+  return data === undefind ?
+    this:
+    this.each(function(){
+      //工具方法进行设置
+      var queue = jQuery.queue(this, type, data);
+
+      // 创建钩子方法
+      jQuery._queueHooks( this, type );
+
+      // inprogerss 有delay 作用？
+      if(type === 'fx' && queue[0] !== 'inprogress' ) {
+        jQuery.dequeue(this, type);
+      }
+
+
+    })
+
+
+
+  },
+
+  dequeue(): 遍历元素执行 出队操作
+  function(type) {
+    return this.each(function(){
+      jQuery.dequeue(this, type);
+    });
+  },
+
+  delay(): 延迟出队
+  /**
+   * time 延迟时间
+   * type 队列type
+   */
+  function(time, type){
+    // 尝试获取 fx.speeds的值
+    time = jQuery.fx ? jQuery.fx.speeds[ time ] || time : time;
+    type = type || 'fx'; //type 默认值
+
+    // 创建定时器
+
+    return this.queue(type, function(next,hooks){
+      var timeout = setTimeout( next, time );
+      hooks.stop = function() {
+        clearTimeout( timeout );
+      };
+    });
+  },
+
+  clearQueue(): 队列重新赋值 []
+  // 清空队列信息
+  function( type ) {
+      return this.queue( type || "fx", [] );
+  },
+  promise(): 类似Deferred.promise();运动完成后执行
+  function(type, obj){
+
+    //- 设置变量
+    var tmp,
+      count = 1, // 计数
+      defer = jQuery.Deferred(), // 创建延迟对象
+      elements = this, // 存储上下文
+      i ＝ this.length, // 计算元素的个数
+    //- 私有函数,完成一个队列后执行
+      resolve = function(){
+        // count 自减,为0时触发 resolveWith
+        if(!( --count )) {
+          defer.resolveWith( elements, [ elements ] );
+        }
+      };
+
+      // 省参兼容,默认type='fx'
+      if ( typeof type !== "string" ) {
+        obj = type;
+        type = undefined;
+      }
+      type = type || "fx";
+
+      /**
+       * 遍历所有元素
+       * 在他们的 type+'queueHooks' 上添加钩子,add( resolve)
+       */
+      while( i-- ) {
+        tmp = data_priv.get( elements[ i ], type + "queueHooks" );
+        if ( tmp && tmp.empty ) {
+          count++;
+          tmp.empty.add( resolve );
+        }
+      }
+
+      // 执行一次 resolve();
+      resolve();
+      return defer.promise( obj ); //返回延迟对象
+
+
+
+
+
+  }
+
+
+
+})
+
+
+
+
+</pre>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 41.359%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>43.001% 进度 代码共8830行/3797行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
+

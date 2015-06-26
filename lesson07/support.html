@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第七部分:line 3184, 3594</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>support<small>jQuery.support 功能检测 </small></h1>
+      <ol>
+        <li> 统一表现形态 </li>
+        <li> 检测浏览器差异 
+            <ol>
+              <li> 方法1: 浏览器版本，浏览器厂商 </li>
+              <li> 是否支持该功能 </li>
+            </ol>
+        </li>
+        <li>  主要在内部使用 </li>
+      </ol>
+      <h3> 外部使用建议使用 <a href='http://modernizr.com/'>modernizr</a> jQuery建议功能检测库, css3 和 html5
+      </h3>
+      <div class="row">
+        <div class="col-md-6">  
+          <fieldset>
+            <legend>查看当前浏览器的support对象 </legend>
+            <ul id='support_obj'>
+            </ul>
+          </fieldset>
+          <script>
+            (function(){
+              var content = $('#support_obj'),
+              supportInfo = $.support;
+              $.each(supportInfo, function(key, item){
+                content.append('<li>'+key+':<em class="text-danger">'+item+'</em></li>');
+              });
+
+            })();
+
+          </script>
+        </div>
+        <div class="col-md-6">
+          <fieldset >
+            <legend></legend>
+            <ul>
+
+            </ul>
+          </fieldset>
+        </div>
+      </div>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+      <pre>
+      // 匿名函数自执行, 工具的模式?
+      jQuery.support = function( support ) {
+
+      // coding....
+
+      return support;
+      }({});
+
+
+      jQuery.support = (function( support ) {
+
+        // 私有变量,创建一些元素
+        var input = document.createElement("input"),
+          fragment = document.createDocumentFragment(),
+          div = document.createElement("div"),
+          select = document.createElement("select"),
+          opt = select.appendChild( document.createElement("option") );
+
+
+        // 早期浏览器，input.type 为空,直接return {} 
+        if ( !input.type ) {
+          return support;
+        }
+
+        input.type = "checkbox"; // 设置input.type 的类型为 checkbox
+
+        // 大部分 为 'on' ,老版本 webkit内核 为 ''
+        // 检测兼容性, 真正解决 的是 hooks钩子机制
+        support.checkOn = input.value !== "";
+
+        // select 的 第一项子项 option 为选中的, true , IE为false
+        support.optSelected = opt.selected;
+
+        // dom 加载完成 重新判断
+        support.reliableMarginRight = true;
+        support.boxSizingReliable = true;
+        support.pixelPosition = false;
+
+        /**
+         * 让复选框选中
+         * 克隆一分 选中的复选框，ie9,10 克隆的复选框没有被选中
+         */
+        input.checked = true;
+        support.noCloneChecked = input.cloneNode( true ).checked;
+
+        /**
+         * 禁止 select 查看子项option 是否被禁止
+         * 老版本webkit 会收到影响，也会被设置为disable 状态
+         */
+        select.disabled = true;
+        support.optDisabled = !opt.disabled;
+
+        /**
+         * 先设置 value 在改变 type, ie9+ 为false 其实为 on
+         * 其他浏览器为 "t"
+         */
+        input = document.createElement("input");
+        input.value = "t";
+        input.type = "radio";
+        support.radioValue = input.value === "t";
+
+        /**
+         * 设置属性checked='t'
+         * 设置属性name='t'
+         * 
+         */
+        input.setAttribute( "checked", "t" );
+        input.setAttribute( "name", "t" );
+
+        /**
+         * fragment 文档碎片
+         * createdocumentfragment()方法创建了一虚拟的节点对象，节点对象包含所有属性和方法。
+         */
+        fragment.appendChild( input );
+        // 克隆文档碎片, 克隆出来的 input ,checked 是否设置为't'
+        support.checkClone = fragment.cloneNode( true ).cloneNode( true ).lastChild.checked;
+
+        // onfocusin 具备冒泡机制, 只有ie 有
+        support.focusinBubbles = "onfocusin" in window;
+
+        /**
+         * div 设置背景剪切 = 'content-box'
+         * 克隆一个div,修改背景剪切 = ''
+         * clearCloneStyle : 原div 是否为原来的 'content-box'
+         * 克隆背景相关信息，ie下都会被影响
+         */
+        div.style.backgroundClip = "content-box";
+        div.cloneNode( true ).style.backgroundClip = "";
+        support.clearCloneStyle = div.style.backgroundClip === "content-box";
+
+        // 需要等dom 加载完成才能判断
+        jQuery(function(){
+
+        // 设置变量
+        var container,
+
+          marginDiv,
+          // divreset 设置一些 style 样式,
+          // box-sizing: css3 新样式,可以查看是标准模式还是怪异模式,
+          // content-box == '正常模式'
+          // border-box == '怪异模式' 影响布局
+          divReset = 'padding:0;margin:0;border:0;display:block;-webkit-box-sizing:content-box;-moz-box-sizing:content-box;box-sizing:content-box',
+
+          // 通过TagName 获取 body
+          body = document.getElementsByTagName("body")[ 0 ];
+
+        if ( !body ) {
+          // 如果 body 不存在 直接 return 
+          return;
+        }
+
+        // container 创建一个div
+        container = document.createElement("div");
+
+        // 为这个div 设置样式，同时让他left 出页面，为了不影响页面布局
+        container.style.cssText = "border:0;width:0;height:0;position:absolute;top:0;left:-9999px;margin-top:1px";
+
+        // container 添加到页面当中, div 添加到 body中
+        body.appendChild( container ).appendChild( div );
+
+        // div内容清空
+        div.innerHTML = "";
+
+        // 对div 设置样式,改称怪异模式 border-box
+        div.style.cssText = "-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;padding:1px;border:1px;display:block;width:4px;margin-top:1%;position:absolute;top:1%";
+
+
+        });
+
+
+
+        return support;
+
+
+      })({});
+
+
+
+
+
+      </pre>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 40.702%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>40.702% 进度 代码共8830行/3594行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>

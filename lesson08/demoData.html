@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - data的使用</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>data 的使用</h1>
+      <ol>
+       
+      </ol>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+        <h4>案例一:实例方法(
+          <em class='text-danger'>data()</em>
+          和
+          <em class="text-danger"> removeData()</em>
+          )
+        </h4>
+        <div id="div1"></div>
+<script>
+$(function(){
+  $('#div1').data('name','world'); // set data
+  $('#div1').removeData('name');   // remove data
+  $.log($('#div1').data('name'));  // get data log: undefined
+});
+
+</script>
+
+        <h4> 案例二:工具方法</h4>
+        <div class="row">
+          <div class="col-md-6">
+            <fieldset>
+            <legend> <small>相关Data工具方法</small> </legend>
+            <ul>
+              <li>acceptData: 可接收的范围</li>
+              <li>hasData</li>
+              <li>data</li>
+              <li>removeData</li>
+              <li>_data<em class='text-danger'>(私有)</em></li>
+              <li>_removeData<em class='text-danger'>(私有)</em></li>
+            </ul>
+          </fieldset>
+          </div>
+          <div class="col-md-6">
+            <div id="div2"></div>
+          </div>
+        </div>
+<script>
+$(function(){
+  $.data(document.body,'name','body');  // set data
+  $.log($.hasData(document.body, 'name')); // hasData ? log: true
+  $.removeData(document.body, 'name');  // remove data
+  $.log($.data(document.body, 'name')); // get data
+  $.log($.hasData(document.body, 'name')); // hasData ? log: false
+
+  //-  设置多个
+  $('#div2').data({
+    'name':'first',
+    'name2':'second'
+  });
+
+  $.log( $('#div2').data('name') , $('#div2').data('name2') );
+  $.log( $('#div2').data() ); //{name:'...',name2:'1111'}
+
+
+
+});
+</script>
+
+      </div>
+    </div>
+
+
+  </div>
+
+
+</body>
+</html>

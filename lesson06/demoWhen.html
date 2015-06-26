@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - When 案例 </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>$.when() 案例<small>jQuery.When 延迟对象，对异步的统一管理 </small></h1>
+      <ol>
+       
+      </ol>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+        <h4>$.when 与 $.deferred 区别 </h4>
+        <p>
+          $.deferred 的作用四针对一个对象的成功失败
+          <br/>
+          $.when 可以对多个延迟对象进行 done fail 操作
+        </p>
+        <h4>$.when 案例</h4>
+        <p>
+          $.when() 的参数只有为延迟对象时，才有when 功能，如果为其他类型则可以在done, fail 中当作参数使用
+        </p>
+        <script>
+        /**
+         * 获取执行 resolve 的延迟对象
+         */
+          function getResolveDef( ) {
+            var def = $.Deferred();
+
+            setTimeout(function(){
+              def.resolve();
+            },1000);
+
+            return def.promise();
+          }
+
+          /**
+           * 获取执行 reject 的延迟对象
+           */
+          function getRejectDef( ) {
+            var def = $.Deferred();
+
+            setTimeout(function(){
+              def.reject();
+            },1000);
+
+            return def.promise();
+          }
+
+          /**
+           * 执行when, 参数为两个延迟对象
+           */
+          function doWhen (){
+            $.when.apply(this, arguments)
+              .done(function (){
+                $.log('doning  in when');
+              })
+              .fail(function(){
+                $.log('failing in when');
+              });
+          }
+          
+          var resolve1 = getResolveDef(),
+            resolve2 = getResolveDef(),
+            reject1 = getRejectDef(),
+            reject2 = getRejectDef();
+
+          // 两个都成功
+            doWhen(resolve1, resolve2); // doning in when
+          // 一个成功一个失败
+            doWhen(resolve1, reject1); // failing in when
+          // 两个失败
+            doWhen(reject1, reject2); // failing in when
+
+            console.log(new Array( 4 ).length );
+
+        </script>
+
+      </div>
+    </div>
+
+
+  </div>
+
+
+</body>
+</html>

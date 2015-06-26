@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>jQuery源码学习 - 第六部分:line 3042, </title>
+  <title>jQuery源码学习 - 第六部分:line 3042,3183 </title>
   <meta content="text/html;charset=utf-8" http-equiv="content-type">
   <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
   <script type="text/javascript" src='../jquery.js'></script>
@@ -218,9 +218,118 @@ jQuery.extend(
 
   },
   // 扩展工具方法 when 辅助于Deferred
-  when( ) {
-    
-  }
+  when( ) :
+    function (suborinate /**延迟对象，多个**/) {
+      var i =0, // 初始i
+        // 参数统一转为 数组
+       resolveValue = core_slice.call(arguments),
+        // 获取参数长度
+       length = resolveValue.length,
+        // remainning  计数器
+        /**
+         * 参数为空， remaining 为 0
+         * 参数个数为1,且对象有promise(延迟对象) 方法，则 remaining 为 1
+         * 参数个数为1,但参数没有promise(不是延迟对象),则remaining 为 0
+         * 参数为多个，则返回 remaining 为 参数个数
+         */
+       remaining = length !== 1 || ( subordinate && jQuery.isFunction( subordinate.promise ) ) ? length : 0,
+
+        // 内部deferred 对象，如果参数仅为一个时，将参数赋值给deferred
+        // 如果不是，则创建新的$.Deferred()
+        // remaining === 1 , deferred 为 subordinate 一个延迟对象
+        // remaining 计数器  !==  1 ,创建一个新延迟对象
+       deferred = remaining === 1? subordinate: jQuery.Deferred(),
+
+       updateFunc() : 更新计数器，以及执行resoveWith
+      --------------- 关键 -------------------
+      function( i, contexts, values ) {
+        return function( value) {
+          contexts[i] = this; //存入上下文
+          values[i] = arguments.length > 1 ? core_slice.call( arguments ) : value; //存入 values参数
+
+          if( values == progressValues ) {
+            // 如果values 的值等于 progressValue 的值则，执行
+          }else if ( !( --remaining )){
+            // 否则,减少计数器
+            // 但计数器为0时，触发deferred.resolveWith(contexts, values);
+
+            deferred.resolveWith(contexts, values);
+
+          }
+        }
+      }
+      ----------------------------------------
+
+
+      // 进行的值
+      progressValues,
+
+      // 进行中的上下文
+      progressContexts,
+
+      // 完成的上下文
+      resolveContexts;
+
+
+
+      // 参数个数大于 1
+      if( length >1) {
+        /**
+         * 创建几个空数组，长度均为length
+         */
+        progressValues = new Array( length );
+        progressContexts = new Array( length );
+        resolveContexts = new Array( length );
+
+        // for 循环 start, 遍历参数，判断是否为延迟对象
+          for(; i < length; i++){
+
+            // 参数为延迟对象
+            if( resolveValues[i] && jQuery.isFunction( resolveValues[i].promise )) {
+
+            -----------关 键------------
+            // 延迟对象的promis对象
+              resolveValues[i].promise()
+            // 添加done 方法
+                .done( updateFunc(i, resolveContexts, resolveVlues))
+            // 添加fail 方法, 一次触发，即可
+                .fail( deferred.reject )
+            // 添加 progress 方法
+                .progress(updateFunc(i, progressContexts, progressValues ));
+            ---------------------------
+
+            }
+            else {
+            // 非延迟对象,  --计数器
+              -- remaining;
+            }
+          }
+        // for 循环 end
+
+      }
+
+
+
+
+
+
+        /**
+         * $.when()零参数数，延迟对象计数器为0
+         * remaining = 0,
+         * 立刻执行resolveWith()
+         */
+       if( !remaining ){
+        /**
+         * 执行resolveWith( )
+         */
+        deferred.resolveWith(resolveContext, resolveValue);
+       }
+
+
+
+
+
+    }
 
 )
 
@@ -235,8 +344,8 @@ jQuery.extend(
     <div class='row'>
       <div class="col-md-12">
         <div class="progress">
-          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 34.439%;background:#428bca">
-            <span style='min-width: 20px;color:#fff'>34.439% 进度 代码共8830行/3041行</span>
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 36.0479%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>36.047% 进度 代码共8830行/3041行</span>
           </div>
         </div>
       </div>

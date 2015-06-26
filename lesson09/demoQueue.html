@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - queue的使用</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+  <style>
+    .red {
+      background: #f00;
+    }
+
+    .width-100 {
+      width:100px;
+    }
+
+    .height-100 {
+      height: 100px;
+    }
+
+    #div1 {
+      position: relative;
+      overflow: hidden;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>queue的使用</h1>
+      <ol>
+        <li> 出/入队操作</li>
+        <li> 实例与工具方法</li>
+      </ol>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+        <h4>
+          queue In animate
+        </h4>
+
+        <div id="div1" class='width-100 red height-100'></div>
+<script>
+  $('#div1').click(function(){
+
+    // $(this).animate({'opacity':0.5},1000);
+    // $(this).animate({'width':'200'},1000);
+    // $(this).animate({'left':300},2000);
+
+    /**
+     * animate 内部queue 的名字是fx,默认
+     */
+    $(this).animate({'opacity':0.5},1000)
+    .queue('fx',function(){
+      // 需要执行出队操作，animate 才能继续，animate 自带出队
+      $(this).dequeue();
+
+    }).queue('fx',function(next){
+      // next 参数 效果等同于 $(this).dequeue(); 出队
+      next();
+    }).
+    animate({'width':'200'},1000)
+      .delay(2000) //推迟2s
+      .animate({'left':300},2000);
+
+    // promise 执行完成所有即执行
+    $(this).promise().done(function(){
+      console.log('done');
+    });
+
+    
+
+
+
+  });
+</script>
+
+
+
+
+
+<script>
+function quFunc1 () {
+  $.log('in quFunc1');
+}
+
+function quFunc2 () {
+  $.log('in quFunc2');
+}
+
+
+/*********** 工具方法 ***************/
+//- 入队
+$.queue(document, 'q1', quFunc1);
+$.queue(document, 'q1', quFunc2);
+
+$.queue(document, 'q2', [quFunc1, quFunc2]); 
+
+$.log( $.queue(document, 'q1') );
+$.log( $.queue(document, 'q2') );
+/**
+ * result: [quFunc1(), quFunc2()]
+ */
+//- 出队
+$.dequeue(document, 'q1');
+$.dequeue(document, 'q1');
+
+
+/*********** 实例方法 ***************/
+$('#div1').queue('q3', quFunc1);
+$('#div1').queue('q3', quFunc2);
+
+$('#div1').dequeue('q3');
+$('#div1').dequeue('q3');
+
+
+
+</script>
+
+
+      </div>
+    </div>
+
+
+  </div>
+
+
+</body>
+</html>

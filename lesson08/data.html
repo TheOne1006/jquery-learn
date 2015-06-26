@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第八部分:line 3297, 3652</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Data<small> </small></h1>
+      <ol>
+        <li>
+          data 、attr 、prop 差别
+        </li>
+        <li>
+          data 方法能避免内存泄漏
+        </li>
+      </ol>
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small>Data结构</small> </legend>
+            <ul>
+              <li>静态变量 uid</li>
+              <li>静态方法 Data.accepts</li>
+              <li>
+                prototype结构
+                <ul>
+                  <li>key( )</li>
+                  <li>set( )</li>
+                  <li>get( )</li>
+                  <li>access( ) : set() /get()</li>
+                  <li>remove( )</li>
+                  <li>hasData( )</li>
+                  <li>discard( )</li>
+                </ul>
+              </li>
+            </ul>
+          </fieldset>
+        </div>
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small>jQuery 实例扩展 和 工具方法对应Data方法</small> </legend>
+            <ul>
+              <li>
+                $.data 工具方法
+                <ol>
+                  <li>
+                    $.acceptData: <span class='text-danger'> Data.accepts( )</span>
+                  </li>
+                  <li>
+                    $.hasData: <span class='text-danger'> Data.prototype.hasData( )</span>
+                  </li>
+                  <li>
+                    $.data: <span class='text-danger'> Data.prototype.access( )</span>
+                  </li>
+                  <li>
+                    $.removeData: <span class='text-danger'> Data.prototype.reove( )</span>
+                  </li>
+                  <li>
+                    $._data: <span class='text-danger'> Data.prototype.access( )</span>
+                  </li>
+                  <li>
+                    $._removeData: <span class='text-danger'> Data.prototype.reove( )</span>
+                  </li>
+                </ol>
+              </li>
+              <li>
+                $( ).data 实例方法
+                <ol>
+                  <li>$.fn.data <span class='text-danger'>  Data.proptype.set/ jQUery.access </span> </li>
+                  <li>
+                    $.fn.removeData  <span class='text-danger'> Data.prototype.reove( )</span>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </fieldset>
+        </div>
+        <div id="div2"></div>
+      </div>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+<pre>
+
+/**
+ * jQuery 私有变量
+ */
+var data_user, data_priv,
+/**
+ * rbrace 正则 匹配对象字面量写法
+ */
+rbrace = /(?:\{[\s\S]*\}|\[[\s\S]*\])$/,
+/**
+ * rmultiDish 正则 大写英文
+ */
+rmultiDash = /([A-Z])/g;
+
+
+/**
+ * Data 构造函数
+ */
+function Data() {
+  /**
+   * 老版本的webkit 不支持 object.preventExtensions 或者 Object.frezze 方法
+   * Object.freeze( obj); //将obj 属性设置为 只读
+   * Object.defineProperty ( obj, obj的属性, obj属性的方法,只有get)
+   */
+  Object.defineProperty( this.cache = {}, 0, {
+    get: function() {
+      return {};
+    }
+  });
+  // this.cache{ 0:{} }, this.cache[0],这个对象不能被修改
+  /**
+   * this.cache 存储具体data数据
+   */
+
+  /**
+   * jQuery的随机数加Math.random()随机数
+   * 作用: 数据与元素之间做映射时的参照值
+   */
+  this.expando = jQuery.expando + Math.random();
+}
+
+/**
+ * 设置静态成员uid
+ * 作用: 
+ */
+Data.uid = 1;
+
+/**
+ * 静态方法, data 可接受对象类型
+ */
+Data.accepts(): 
+  /**
+   * 可接受类型
+   * 1. 没有nodeType 属性,即非dom节点的任何对象
+   * 2. 如果是dom, 则元素节点1 和 文本节点9 也是可以接受的 
+   */
+  function ( owner ) {
+    return owner.nodeType ? ( owner.nodeType === 1 || owner.nodeType === 9): true;
+  }
+
+
+
+
+/**
+ * Data 的 prototype
+ * 
+ */
+Data.prototype = {
+  key(): 返回一个key,元素与 cache 映射id,一个元素只有一个id 
+
+  function( owner ) {
+
+    // 如果参数不是可接受的，则返回 0
+    // cache[0] 是不可编辑的值
+    if( !Data.accepts( owner ) ) {
+      return 0;
+    }
+
+    // 设置变量
+    // 描述对象 初始化为空
+    var descriptor = {},
+      /**
+       * 获取 this.expando 属性 (数据映射值)
+       */
+      unlock = owner[ this.expando ];
+
+      if( !unlock ) {
+          // 如果 unlock 的值不存在
+          // unlock 被赋值为 静态uid属性,并自增1
+          unlock = Data.uid++;
+
+------------  关键  ------------------------------
+/**
+ * 尝试将 描述对象存入 owner 中，如果抛出异常
+ * 则只做普通扩展
+ */
+          try {
+            descriptor[ this.expando ] = { value: unlock };
+
+            // 设置增加 对象的只读属性 如[唯一数]= {value: 1}
+            Object.defineProperties( owner, descriptor );
+
+            // Support: Android 大于 4
+            // 只做普通扩展
+          } catch ( e ) {
+            descriptor[ this.expando ] = unlock;
+            jQuery.extend( owner, descriptor );
+          }
+
+------------  关键end  ------------------------------
+      }
+
+     // 确保缓存对象,如果不存在则初始化为 {}
+     if ( !this.cache[ unlock ] ) {
+      this.cache[ unlock ] = {};
+     }
+
+      /**
+       * 返回映射 key
+       */
+     return unlock;
+  }
+
+
+
+  set(): 设置data
+
+    function (owner , data, value) {
+
+      //- 设置变量
+      var prop, // 道具,作用 for in 临时变量
+
+      unlock = this.key(owner), // 获取 元素与cache 的映射值
+      cache = this.cache[unlock]; // 获取映射内容
+
+      // Handle: [ 目标obj, 'key' , value ]
+      // 如果第二个参数为string类型
+      if( typeof data === 'string') {
+        cache[ data ] = value;
+      } else {
+        // Handle: [ 目标obj, { properties}]
+
+        /**
+         * 如果这个cache 是空对象
+         * 直接将 data 扩展到 this.cache[unlock] 中
+         */
+        if( jQuery.isEmptyObject( cache )) {
+
+        } else {
+          // 其他方式则采用 逐一赋值的方式
+          for ( prop in data ) {
+            cache[ prop ] = data[ prop ];
+          }
+
+        }
+
+        // 返回 存储的映射
+        return cache;
+
+      }
+
+    }
+
+  get(): 获取元素映射信息,如果设置第二个参数，则获取cache[key],否则返回元素所有先关联的映射信息
+    function (owner, key) {
+
+      var cache = this.cache[ this.key(owner) ];
+
+      return key === undefined ? cache : cache[key];
+    }
+
+  access(): 判断整合,实际调用 get() or set()
+    function ( owner, key , value) {
+
+      //- 设置变量
+      var stored;   // 存储
+
+      /**
+       * 为获取映射信息条件:
+       * 1. 没有key值
+       * 2. key 存在 但是类型为 'string',同时 value参数为 undefined
+       */
+      if( key === undefined || ( (key && typeof key === 'string') && value === undefined ) ) {
+
+        // 调用 get 方法
+        stored = this.get( owner, key);
+
+        // 获取不到则，在通过 驼峰化 key再获取遍， 不能通过access 否则会 无限loop
+        return stored !== undefined ? stored : this.get( owner, jQuery. camelCase(key) );
+
+      }
+
+      // 其他情况为设置值
+      this.set( owner, key, value);
+
+      /**
+       * 1. 如果 value 不为undefined ,返回 value
+       * 2. 如果key 是object 类型，则返回 key
+       */
+      return value !== undefined ? value : key;
+
+    }
+
+
+
+  remove():
+    function ( owner , key) {
+
+      //- 设置变量
+      var i, name, camel,
+        unlock = this.key( owner ),
+        cache = this.cache[ unlock ];
+
+      //－ 没有key参数,删除对应映射所有数据
+      if( key == undefined ) {
+        this.cache[unlock] = {};
+      } else {
+        //- 如果key 是数组
+        if( jQuery.isArray( key ) ) {
+          //- 转驼峰,合并成一个数组
+          name = key.concat( key.map( jQuery.camelCase) );
+        }else {
+          //- 如果key不是数组
+          camel = jQuery.camelCase( key ); // 转驼峰
+
+          // 尝试将处理前的 str 也放到 name 数组中
+          if( key in cache) {
+            name = [ key, camel ];
+          } else {
+            // 如果不存在
+            name = camel;
+
+            //- name 重新处理,如果存在cache 则为 [name]数组，
+            如果没有则尝试匹配去空
+            name = name in cache ? [name] : ( name.match( core_rnotwhite ) || [] );
+          }
+        }
+
+        i ＝ name.length;
+        //- 遍历删除 cache对象
+        while (i--) {
+          delete cache[ name[i] ];
+        }
+      }
+
+    }
+
+  hasData(): 是否有相关映射数据
+    function ( owner ) {
+      //- 空数组取反
+      return !jQuery.isEmptyObject(
+        //- 对象身上的this.expando 是否再cache 有对应数据
+        this.cache[ owner[this.expando] ] || {}
+      );
+    }
+
+  discard(): 删除制定cache 的属性值
+    function( owner ) {
+        // 如果 owner 的 this.expando 存在
+        if ( owner[ this.expando ] ) {
+          // 则删除 cache 对应的映射数据
+          delete this.cache[ owner[ this.expando ] ];
+        }
+      }
+}
+
+/**
+ * 实例化Data
+ */
+data_user = new Data();
+data_priv = new Data();
+
+/**
+ * jQuery扩展工具方法
+ */
+jQuery.extend({
+  acceptData: Data.accepts,
+
+  hasData(): 实际调用 Data.hasData();
+
+  data(): 实际调用 Data.access(elem, name, data);
+
+  removeData(): 实际调用 Data.remove();
+
+  _data():  实际调用 Data.access(elem, name, data);
+
+  _removeData(): 实际调用 Data.remove();
+
+});
+
+
+/**
+ * 扩展实例方法
+ */
+jQuery.fn.extend({
+  data():
+    function( key, name) {
+      //- 设置变量
+      var attrs, name,
+        elem = this[ 0 ], // elem 获取时的第一个元素
+        i = 0,
+        data = null;
+
+    /**
+     * 情况1 获取所有映射数据
+     * 当 key === undefined 获取第一个元素
+     */
+--------------  关键  -------------------------
+    if( key === undefined ) {
+      // this的集合长度存在 != 0, 容错
+      if( this.length ) {
+        data = data_user.get( elem );
+
+        //- 兼容 元素data-val属性 信息
+        /**
+         * node节点为元素节点
+         * 没有设置 "hasDataAttrs" 属性
+         */
+        if ( elem.nodeType === 1 && !data_priv.get( elem, "hasDataAttrs" ) ) {
+
+          // attrs 元素的所有属性
+          attrs = elem.attributes;
+
+          // 遍历属性
+          for ( ; i < attrs.length; i++ ) {
+            name = attrs[ i ].name;
+
+            /**
+             * 发现 'data-'开头的元素属性
+             * name = 转驼峰后的 data- 自定义属性名
+             * dataAttr() 方法
+             */
+            if ( name.indexOf( "data-" ) === 0 ) {
+              name = jQuery.camelCase( name.slice(5) );
+              /**
+               * 如果data[name]有值，在dataAttr 中将跳过
+               */
+              dataAttr( elem, name, data[ name ] );
+            }
+          }
+          //- 设置元素的  "hasDataAttrs" 值为 true
+          data_priv.set( elem, "hasDataAttrs", true );
+        }
+      }
+      return data;
+    }
+--------------  关键 END -------------------------
+
+      /**
+       * 情况2 key=== object 设置操作
+       */
+      if ( typeof key === "object" ) {
+        //- 遍历this 集合 设置 data
+        return this.each(function() {
+          data_user.set( this, key );
+        });
+      }
+
+      /**
+       * 情况3 
+       * jQuery.access 方法
+       * jQuery.access( elems 集合 , callback 回调函数, key ,value, chainable /* true 设置状态*/, emptyGet /*undefined*/, raw /* 函数模式*/ )
+       */
+      
+      return jQuery.access( this, function( value) { ... },null , value, argunemts.length > 1, null ,true);
+      
+--------------  关键 ------------------------------
+      fn: 
+
+      function(value){
+        //- 设置变量
+        var data,
+          camelKey = jQuery.camelCase( key );
+
+          // value === undefined 获取操作
+          if( elem && value === undefined) {
+
+          data = data_user.get(elem, key);
+
+          // 如果cache( this.owner[ this.expando ]).key 有值则返回该值
+          if(data !== undefined) {
+            return data;
+          }
+
+          // 尝试 返回 驼峰类型
+          data = data_user.get( elem, camelKey );
+          if ( data !== undefined ) {
+            return data;
+          }
+
+          // 尝试返回 html5 data-* attributie
+          data = dataAttr( elem, camelKey, undefined );
+          if ( data !== undefined ) {
+            return data;
+          }
+
+          return;
+
+        }
+
+        // 设置操作
+        //- 枚举遍历个个元素
+        this.each(function(){
+
+          //- 获取相关data 数据
+          var data = data_user.get( this, camelKey );
+
+          //- 设置值,驼峰形式
+          data_user.set( this, camelKey, value );
+
+          //- 如果 驼峰形式有值,并且key中有 ‘-’ 则再次设置以原key 形式
+          /**
+           * $.fn.data('minWidth','30')
+           * $.fn.data('min-width',50)
+           * =>
+           * key:{ minWidth:50, 'min-width':50}
+           */
+          if( key.indexOf("-") !== -1 && data !== undefined ){
+            data_user.set( this, key, value );
+          }
+        });
+
+      }
+
+
+--------------  关键 END  -------------------------
+
+
+    }
+
+  removeData(): 删除相关数据
+    function (key) {
+      //- 遍历删除
+      return this.each(function(){
+        data_user.remove( this, key );
+      })
+    }
+
+});
+
+--------------  关键  -------------------------
+// 私有方法 dataAttr
+function dataAttr( elem, key, data ) {
+  var name;
+
+  /**
+   * cache 中的映射数据为 undefined,
+   * 并且元素的nodeType === 1 ,元素节点
+   */
+  if ( data === undefined && elem.nodeType === 1 ) {
+    /**
+     * rmultiDash 正则大写字母 转成 -大写,再转成小写
+     * name 回复属性名
+     */
+    name = "data-" + key.replace( rmultiDash, "-$1" ).toLowerCase();
+
+    //- 获取元素属性
+    data = elem.getAttribute( name );
+
+    if ( typeof data === "string" ) {
+      try {
+        /**
+         * 特定字符串 转移
+         * 指定字符 true / false /null
+         * 
+         */
+        data = data === "true" ? true :
+          data === "false" ? false :
+          data === "null" ? null :
+          // Only convert to a number if it doesn't change the string
+          // 纯数字类型
+          +data + "" === data ? +data :
+          // rbrace 正则 匹配对象字面量写法
+          rbrace.test( data ) ? JSON.parse( data ) :
+          data;
+      } catch( e ) {}
+
+      // Make sure we set the data so it isn't changed later
+      data_user.set( elem, key, data );
+    } else {
+      data = undefined;
+    }
+  }
+  return data;
+
+
+
+
+}
+
+
+
+
+
+
+</pre>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 41.359%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>41.359% 进度 代码共8830行/3652行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
