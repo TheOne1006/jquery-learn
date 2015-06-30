@@ -4168,6 +4168,7 @@ jQuery.fn.extend({
 
 			for ( ; i < len; i++ ) {
 				elem = this[ i ];
+				// rclass = /[\t\r\n\f]/g, 空白字符
 				cur = elem.nodeType === 1 && ( elem.className ?
 					( " " + elem.className + " " ).replace( rclass, " " ) :
 					" "
@@ -4193,6 +4194,7 @@ jQuery.fn.extend({
 		var classes, elem, cur, clazz, j,
 			i = 0,
 			len = this.length,
+			//-  1 || 0 && 2 , &&优先级高于 || 
 			proceed = arguments.length === 0 || typeof value === "string" && value;
 
 		if ( jQuery.isFunction( value ) ) {
@@ -4415,7 +4417,7 @@ jQuery.extend({
 			}
 		}
 	},
-
+	// 实例方法最终调用 $.attr
 	attr: function( elem, name, value ) {
 		var hooks, ret,
 			nType = elem.nodeType;

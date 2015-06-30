@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 元素操作的使用</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>案例</h1>
+      <p style='background:#ccc'> attr and prop 差别:</p>
+      <ul>
+        <li>
+          设置元素自身属性,prop 也添加到属性中
+          <ol>
+            <li id='propset'> prop 设置 title</li>
+            <li id='attrset'> attr 设置 title</li>
+          </ol>
+        </li>
+        <li>
+          设置元素自定义属性
+          <ol>
+            <li id="attrSet2"> attr 设置 元素自定义属性</li>
+            <li id="propSet2"> prop 设置 元素自定义属性</li>
+          </ol>
+        </li>
+
+        <li>
+          获取 link 
+          <a id='linkget' href="baidu.com">测试网址</a>
+        </li>
+
+        <li>
+          <select name="selget" id="selget">
+            <option value="theone">theone</option>
+            <option value="theking">theking</option>
+            <option value="thelast">thelast</option>
+          </select>
+          <button id='getSelect'>获取select信息</button>
+        </li>
+      </ul>
+    <div>
+    <script>
+    //- select 的事件
+    $('#getSelect').click(function(){
+      $.log($('#selget').get(0).selectedIndex);
+      $.log($('#selget').get(0).options);//选项信息
+    });
+
+    </script>
+    <script>
+      $('#propset').attr('title','world');
+      // 等同于原生等 setAttribute('title','world');
+
+      $('#attrset').prop('title','world');
+      // 等同于原生elem['title'] = 'world';
+
+      $('#propSet2').prop('usernmae','theone'); // 未添加到元素属性中
+      $('#attrSet2').attr('usernmae','theone');
+
+      $.log($('#linkget').attr('href')); // baidu.com
+      $.log($('#linkget').prop('href')); //http://localhost:8080/lesson10/baidu.com
+
+
+    </script>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+        <h4>
+          removeAttr AND removeProp 差异
+        </h4>
+        <div id="removeId" title='test' > 测试div</div>
+        <script>
+          $('#removeId').removeAttr('title');
+          $.log('获取删除条的数据',$('#removeId').attr('title'));
+          $('#removeId').removeProp('id');    // 没有真正删除id属性
+          $.log('删除propAttr', $('#removeId').prop('id')); 
+        </script>
+
+        <h5>
+          TEST removeAttr 
+        </h5>
+        <div id='rmovediv' class='toremove' >test remove class</div>
+        <script>
+        $('#rmovediv').removeAttr('class');
+        // $('#rmovediv').get(0).removeAttribute('class');
+        </script>
+
+
+
+<script>
+
+
+
+</script>
+
+
+      </div>
+    </div>
+
+
+  </div>
+
+
+</body>
+</html>

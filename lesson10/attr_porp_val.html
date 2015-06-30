@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第十部分:line 3798,4318</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>元素属性功能</h1>
+      <ol>
+        <li></li>
+      </ol>
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small>功能属性 实例方法</small> </legend>
+            <ul>
+              <li>attr( )<code>通过 $.access() 调用$.attr()</code></li>
+              <li>removeAttr( ) <code>通过$.each($.removeAttr() )</code> </li>
+              <li>prop( ) <code>通过$.access() 调用 $.prop()</code></li>
+              <li>removeProp( ) </li>
+
+              <!-- class -->
+              <li>addClass( )</li>
+              <li>removeClass( )</li>
+              <li>toggleClass( )</li>
+              <li>hasClass( )</li>
+
+              <li>val( )</li>
+            </ul>
+          </fieldset>
+        </div>
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small>功能属性 工具方法</small> </legend>
+            <ul>
+            <li>valHooks{option:get , select:get,set} 兼容val()的钩子</li>
+            <li>attr( )</li>
+            <li>removeAttr( )</li>
+            <li>attrHooks: 需要兼容 attr 的hooks 对象</li>
+            <li>propFix</li>
+            <li>prop( )</li>
+            <li>propHooks</li>
+            <li> 外部私有obj : boolHook 兼容 通过boolean 设置属性的操作</li>
+            </ul>
+          </fieldset>
+        </div>
+    <div>
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+<pre>
+
+//-  定义变量
+var nodeHook, boolHook,
+  rclass = /[\t\r\n\f]/g,
+  rreturn = /\r/g,
+  rfocusable = /^(?:input|select|textarea|button)$/i;
+
+//- jQuery 实例扩展
+jQuery.fn.extend({
+  attr(): 设置/获取属性,最终调用$.attr
+  function(name, value) {
+    //- $.access(上下文, fn, key, val, 是否为设置)
+    return jQuery.access(this, jQuery.attr, name, value, arguments.length > 1 );
+  } 
+
+
+  removeAttr(): 偏离元素调用 $.removeAttr(this, name);
+
+  function(name) {
+    // 偏离元素删除 属性
+    return this.each(function(){
+      jQuery.removeAttr( this, name );
+    });
+  }
+
+  prop(): 设置/获取属性,最终调用$.prop
+    function(name, value) {
+      return jQuery.access(this, $.prop, name, value ,arguments.length > 1 );
+    }
+
+  removeProp(): 删除所有prop属性，不支持分割操作
+    function(){
+      return this.each(function(){
+        // 尝试获取 propFix 中的name
+        delete this[ jQuery.propFix[name] || name];
+      });
+    },
+
+  addClass():
+  function( value ){
+
+    //- 设置变量
+    var classes, // 字符串到value 拆分出来到数组
+      elem,      // 遍历this时存放当前元素
+      cur,       // 当前元素的className
+      clazz,     // 遍历classes 存放当前 class
+      j,
+      i = 0,
+      len = this.length, // 当前对象长度
+      proceed  = typeof value === 'string' && value; //有效字符串
+
+      /**
+       * $.fn.addClass( fn ) 允许穿函数参数
+       */
+      if( jQuery.isFunction( value ) ) {
+        //- j 为 elem 元素
+        return this.each( function(j) {
+            //- call(上下文,当前元素索引, 元素的class的值 ) 最终还是返回 'str'
+          jQuery(this).addClass( val.call(this, j ,this.className) )
+        })
+      }
+
+      /**
+       * 执行条件 proceed === true 可执行,字符串类型
+       */
+      if( proceed ) {
+
+        //- 正则匹配到以 空格分开到 字符串
+        classes = ( value || "" ).match( core_rnotwhite ) || [];
+
+        for (; i < len; i++ ) {
+          elem = this[i];
+          /**
+           * 只有是元素节点才能添加class,否则返回 ' '
+           * 元素节点的class 将空白字符转换成' '
+           * rclass = /[\t\r\n\f]/g,
+           */
+          cur = elem.nodeType === 1 && (elem.className ? ( " " + elem.className + " " ).replace( rclass, " " ) : " "); 
+
+          if( cur ){
+            j = 0;
+            //- classes 数组(参数通过空格拆封的数组) 判断是否添加到class中
+            while ( (clazz = classes[j++]) ) {
+              if( cur.indexOf ( " "+ clazz " ") < 0) {
+                // 判断原始 的class 是否包含clazz,没有则插入
+                cur += clazz + " ";
+              }
+            }
+
+            //- 更新elem的className
+            elem.className = jQuery.trim( cur );
+
+          }
+        }
+      }
+
+      return this;
+  },
+
+
+  removeClass():删除class
+  function( value ) {
+    var classess, // value str2arr 的数组
+      elem,       // 遍历this, 记录当前元素
+      cur,        // 处理后的 className
+      clazz,      // 遍历classes 存放单个class
+      j,
+      i = 0,
+      len = this.length,
+      proceed = arguments.length === 0 || typeof value === "string" && value; //－ 删除执行条件,字符串或者什么都不传
+
+      /**
+       * 同addClass 允许传函数
+       */
+      if ( jQuery.isFunction( value ) ) {
+        return this.each(function( j ) {
+          jQuery( this ).removeClass( value.call( this, j, this.className ) );
+        });
+      }
+
+      //- 满足执行条件
+      if( proceed ) {
+        // str2arr
+        classes = ( value || "" ).match( core_rnotwhite ) || [];
+
+        for(; i < len; i++ ) {
+          elem = this[ i ];
+          //- 容错获取当前 className 信息
+          cur = elem.nodeType === 1 && ( elem.className ?
+            ( " " + elem.className + " " ).replace( rclass, " " ) :
+            "");
+
+          /**
+           * 如果cur 满足条件
+           */
+          if( cur ) {
+            j = 0;
+            while( (clazz = classes[j++] ) ) {
+              //- 发现一个替换一个替换为 ' ';
+              while ( cur.indexOf( " " + clazz + " " ) >= 0 ) {
+                cur = cur.replace( " " + clazz + " ", " " );
+              }
+            }
+            //- 删除所有classname
+            elem.className = value ? jQuery.trim( cur ): "";
+          }
+        }
+      }
+
+      return this;
+  }
+
+  toggleClass(): class 的切换
+
+  function(value, stateVal) {
+
+    //- 判断value 的类型
+    var type = typeof value;
+
+    /**
+     * 满足 stateValue 为布尔 以及 value 是字符串时,则可视为addClass or removeClass
+     */
+    if( typeof stateVal === "boolean" && type === "string" ) {
+      return stateVal ? this.addClass( value ) : this.removeClass( value );
+    }
+
+    
+    /**
+     * value 可为函数
+     */
+    if ( jQuery.isFunction( value ) ) {
+      return this.each(function( i ) {
+        jQuery( this ).toggleClass( value.call(this, i, this.className, stateVal), stateVal );
+      });
+    }
+
+    // 返回this.each (function)
+    ---------  toggle 核心 --------------------
+    return this.each( function() {
+
+      //-  如果value 的类型为 string
+      if( type === 'string') {
+        //- 设置变量
+        var className, // className 数组的单个元素存放变量
+          i = 0,
+          self = jQuery( this ), // 上下文
+          classNames = value.match( core_rnotwhite ) || [];
+
+        while ( (className = classNames[ i+= ]) ) {
+
+          // - 最终通过hasClass 判断add or remove
+          if( self.hasClass( className) ) {
+            self.removeClass( className );
+          } else {
+            self.addClass( className );
+          }
+        }
+
+      } else if( type === core_strundefined || type === "boolean" ){
+        // type 为undefined  或是 bool 类型
+
+        // 如果有className 则将className 存放到私有data 中
+          if ( this.className ) {
+            // store className if set
+            data_priv.set( this, "__className__", this.className );
+          }
+
+        /**
+         * 但value === true 时尝试获取 data 中的数据
+         * 如果设置为
+         */
+
+        this.className = this.className || value === false ? "" : data_priv.get( this, "__className__" ) || "";
+
+
+      }
+
+    })；
+    ---------  toggle 核心 --------------------
+  }
+
+  hasClass(): 是否包含class
+
+    function( selector ) {
+    //- 处理成className
+      var className = " " + selector + " ",
+        i = 0,
+        l = this.length;
+        // 遍历元素找是否有 对应类名 的元素
+      for ( ; i < l; i++ ) {
+        if ( this[i].nodeType === 1 && (" " + this[i].className + " ").replace(rclass, " ").indexOf( className ) >= 0 ) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+
+  val(): 针对表单的value属性
+  function( value ) {
+  //- 定义变量
+    var hooks,
+      ret,
+      isFunction, // set 可以支持 fn
+      elem = this[0]; // 获取时只获取第一个元素
+
+  //- 没有参数,获取操作
+  if(!arguments.length) {
+    //- 获取第一个元素
+    if(elem) {
+
+      //- 从jQuery.valHooks 尝试获得hooks 对象
+      hooks = jQuery.valHooks[elem.type] || jQuery.valHooks[ elem.nodName.toLowerCase() ];
+
+      //- 尝试执行hooks 方法
+      if ( hooks && "get" in hooks && (ret = hooks.get( elem, "value" )) !== undefined ) {
+        return ret;
+      }
+
+      //- 没有兼容新问题无需hooks
+      ret.elem.value;
+
+      //- value 的值类型判断
+      return typeof ret === 'string' ?
+        ret.replace(rreturn, ""): // rreturn = /\r/g, 
+        ret == null ? "" :ret; // ret 的值不为假
+
+
+    }
+
+    // 没找到对应elem
+    return;
+  }
+
+  isFunction = jQuery.isFunction(value);
+
+  //- 遍历设置
+  return this.each(function(i){
+
+    var val;
+
+    //- 容错判断
+    if( this.nodeType !== 1){
+      return;
+    }
+
+    //- 兼容函数,apply 方式调用
+    if( isFunction ) {
+      val = value.call( this, i, jQuery(this).val() );
+    } else {
+      val = value;
+    }
+
+    //- 最终转成非fn
+
+    /**
+     * value 兼容null
+     * number2str
+     * arr2str
+     * 值要满足str需求或和 [str,str....]
+     */
+    if( val == null) {
+      val = " "
+    } else if (typeof val === 'number' ) {
+      val += "";
+    } else if( jQuery.isArray( val ) ) {
+      val = jQuery.map(val, function( value ) {
+        return value == null ? "":value+"";
+      })
+    }
+
+    //- 尝试获取钩子
+    hooks = jQuery.valHooks[ this.type ] || jQuery.valHooks[ this.nodeName.toLowerCase() ];
+
+    // 返回 false ,则正常调用 原生赋值语句
+    if ( !hooks || !("set" in hooks) || hooks.set( this, val, "value" ) === undefined ) {
+      this.value = val;
+    }
+
+
+  });
+
+  }
+
+
+});
+
+
+
+
+//- jQuery 工具方法
+jQuery.extend({
+  valHooks : 实例方法val()的兼容钩子
+  {
+      option: {
+        // 黑莓4.7 value 获取不到,则使用 elem.text
+        get: function( elem) {
+          //- ie 低版本 没有option的值,无法自动获取elem.text
+          // optionElem.attributes.value 低版本才有的属性继续在该对象下还有spcified 属性
+          var val = elem.attributes.value;
+          //－ val.spcified 
+          return !val || val.spcified ? elem.value : elem.text;
+        }
+      },
+      select: {
+        /**
+         * 针对单选和多选
+         */
+        get: function( elem) {
+          //- 设置变量
+          var value,
+            option,
+            options = elem.options, 
+            // 当前索引值
+            index = elem.selectedIndex,
+            // 是否为单选,
+            one = elem.type === 'select-one' || index < 0,
+            // 变量存储值初始化
+            values = one? null : [],
+
+            max = one ? index + 1: 
+
+        }
+
+
+        set:
+      }
+      // 后续添加 checkbox ,radio
+
+
+
+
+    }
+
+  attr(): attr 工具方法
+
+  /**
+   * elem 操作对象
+   * name key
+   * value value
+   */
+  function(elem, name, value) {
+    //- 定义变量
+    var hooks, // 钩子对象
+      ret,     // 钩子对象的返回值
+      nType = elem.nodeType; //获取元素的nodeType
+
+    /**
+     * 如果对象不满足可设置属性那么返回 undefined
+     * nodeType 元素:1 属性:2 文本:3 注释:8 文本:9
+     */
+    if( !elem || nType === 3 || nType === 8 || nType === 2) {
+      return;
+    }
+
+    /**
+     * 如果对象不支持 Attribute 设置,则调用$.prop 去实现
+     * 如果document 对象
+     * core_strundefined = 'undefined'; str undefined
+     */
+    if ( typeof elem.getAttribute === core_strundefined ) {
+      return jQuery.prop( elem, name, value );
+    }
+
+
+    // 判断是否需要钩子
+    //- 如果node节点类型不是元素节点，或 不是xml文本
+    if ( nType !== 1 || !jQuery.isXMLDoc( elem ) ) {
+      name = name.toLowerCase(); // 转小写
+
+      ---------- hooks -------------
+      //- jQuery.attrHooks[name] 是否需要兼容处理的钩子具有 set get 方法
+      //- jQuery.attrHooks = {type:{.....}} 目前只有type 需要兼容处理
+
+      /**
+        jQuery.expr.match.bool = new RegExp("^(?:checked|selected|async|autofocus|autoplay|controls|defer|disabled|hidden|ismap|loop|multiple|open|readonly|required|scoped")$", "i" );
+        例如 兼容 $('input').attr('checked', true);
+       */
+      //- 使用boolean 兼容元素属性原生设置方式 类型的则放出boolHook 钩子只有 set
+
+      //- 否则为 nodeHook 即 undefined 不需要钩子
+      hooks = jQuery.attrHooks[name] || 
+        ( jQuery.expr.match.bool.test( name ) ? boolHook : nodeHook );
+      ---------- hooks END -------------
+
+    }
+
+    // value 满足条件,则设置
+    if( value !== undefined ) {
+
+      //- value 值为null,则执行删除操作
+      if( value === null ) {
+        jQuery.removeAttr( elem, name );
+
+        //- 判断设置是否需要兼容, 并试图通过 hooks.set() 去设置
+      }else if ( hooks && 'set' in hooks && (ret = hooks.set(elem, value, name)) !== undefined ) {
+        return ret;
+      } else {
+        //－ 原生方法设置属性
+        elem.setAttribute(name, vlaue+""); //值转成 string
+        return value;
+      }
+
+    //- 判断是否需要兼容, 并试图通过 hook.get() 获取
+    }else if( hooks && "get" in hooks && (ret = hooks.get( elem, name )) !== null ){
+      return ret;
+
+    }else{
+      //- jQuery.find = Sizzle, 通过Sizzle.attr 获取attr 属性值
+      ret = jQuery.find.attr (elem, name); 
+
+      return ret == null ? undefined : ret;
+
+    }
+
+  }
+
+
+  removeAttr(): 删除属性
+  /**
+   * elem  元素
+   * values 属性名称 通过空格分开
+   */
+  function( elem ,value) {
+    //- 设置变量
+    /**
+     *  //用于匹配单词，通过空格分割开, 正则意思 非空字符串
+     *  core_rnotwhite = /\S+/g,
+     */
+    var name ,  //遍历 attrNames 为元素的属性名
+      propName, // 对应兼容新写法的名字
+      i＝ 0,    // attrNames 的计数器
+      attrNames = value && value.match(core_rnotwhite); // 将value 分成数组以空格为分割符号;
+
+      /**
+       * 执行条件 attrNames 正确 
+       * 且 elem的nodeType === 1 即元素属性 
+       */
+    if( attrNames && elem.nodeType === 1 ) {
+
+      /**
+       * 遍历 attrNames 数组
+       * 
+       */
+      while ( name = attrNames[i++]) {
+      /**
+       * 针对特殊属性名的兼容写法 如class, for
+       * 对应原生className ,htmlFor
+       * ?? 没有共同点与 match bool
+       */
+      propName = jQuery.propFix[name] || name;
+
+        elem.removeAttribute( name ); //原生删除 属性
+
+        // 删除 如checked(可bool化)的属性,在prop 中的值相应改变成false
+        if( jQuery.expr.match.bool.test(name) ) {
+          elem[propName].false;
+        }
+
+        elem.removeAttribute(name); // 删除对应属性
+      }
+    }
+  }
+
+
+  attrHooks: 需要兼容 attr 的hooks 对象
+  {
+    /**
+     * elem attrbuite 只有一个type 属性需要兼容,并且只有一个 'set'
+     * support.radioValue 设置 radio 问题
+     */
+    type: {
+      set : function( elem, value) {
+        //- 如果满足条件执行兼容处理
+        /**
+         * 执行条件: jQuery功能检测没通过, value='radio' ,并且是input 元素
+         */
+        if( !jQuery.support.radioValue && value === "radio" && jQuery.nodeName(elem, "input") ) {
+          /**
+           * 兼容方法 存放当前元素value ,修改type ,再设置回 [type='radio']的value
+           */
+          var val = elem.value;
+          elem.setAttribute( "type", value );
+          if ( val ) {
+            elem.value = val;
+          }
+          return value;
+
+        }
+      }
+    }
+  }
+
+  propFix:{} 兼容新写法的属性名
+  {
+    "for": "htmlFor",
+    "class": "className"
+  },
+
+  prop(): 
+  function( elem, name ,value ){
+    //- 设置变量
+    var ret,
+      hooks,
+      notxml,  // 不是xml document: true, xml document :false
+      nType = elem.nodeType; // 对象点nodeType 值
+
+    /**
+     * 排除无法操作点对象
+     * 空 或者 nType = 3|8|2
+     * nodeType 元素:1 属性:2 文本:3 注释:8 文本:9
+     */
+    if ( !elem || nType === 3 || nType === 8 || nType === 2 ) {
+      return;
+    }
+
+    notxml = nType !== 1 || !jQuery.isXMLDoc( elem );
+
+
+    /**
+     * 如果不是xml document
+     */
+    if( notxml ) {
+      /**
+       * 兼容处理
+       * 属性名propFix 前缀处理
+       * hooks 获取 $.propHooks[ name] 对象
+       */
+      name = jQuery.propFix[ name ] || name;
+      hooks = jQuery.propHooks[ name ];
+    }
+
+    //- 设置
+    if( value !== undefined){
+      /**
+       * 尝试hooks 中设置,
+       */
+      return hooks && 'set' in hooks && (ret = hooks.set(elem, value, name)) !== undefined ?
+        ret :
+        (elem[name] = value);
+
+    } else {
+      //- 获取
+      /**
+       * 尝试通过hooks 中获取
+       */
+      return hooks && 'get' in hooks && (ret = hooks.get(elem, name)) !== null ?
+      ret :
+      elem[ name ];
+    }
+  },
+
+
+
+  propHooks: {}
+    /**
+     * 切换光标属性
+     * rfocusable = /^(?:input|select|textarea|button)$/i;
+     * 有tabindex 属性, input  或者 href 返回 tabIndex 否则返回 -1
+     */
+    tabIndex: {
+      get: function(elem) {
+        return elem.hasAttribute( "tabindex" ) || rfocusable.test( elem.nodeName ) || elem.href ?
+          elem.tabIndex :
+          -1;
+      }
+    }
+
+});
+
+
+
+// 兼容通过 boolean 设置属性的错误
+boolHook = {
+  set: function( elem, value, name) {
+    // 设置为false 直接移除
+    if(value === false) {
+      jQuery.removeAttr(elem, name);
+    }else {
+      elem.setAttribute(name, name); // 设置  属性name 的值也等于 name
+    }
+
+    return name
+  }
+}
+
+/**
+ * propHooks 附加:
+ * support.optSelected
+ * ie 下第一个创建的 selected 选中 但option没有选中
+ */
+if( !jQuery.support.opSelected ){
+  jQuery.propHooks.selected = {
+    get: function( elem) {
+      var parent = elem.parentNode;
+      if( parent && parent.parentNode ) {
+        parent.parentNode.selectedIndex;
+      }
+      return null;
+    }
+  }
+}
+
+/**
+ * jQuery.propFix 附加 转小写
+ */
+ jQuery.each([
+  "tabIndex",
+  "readOnly",
+  "maxLength",
+  "cellSpacing",
+  "cellPadding",
+  "rowSpan",
+  "colSpan",
+  "useMap",
+  "frameBorder",
+  "contentEditable"
+ ], function() {
+  jQuery.propFix[ this.toLowerCase() ] = this;
+ });
+
+/**
+ * jQuery.valHooks兼容
+ * 设置都需要兼容, get 则根据 support 的判断
+ */
+jQuery.each(['radio','checkbox'], function(){
+  jQuery.valHooks[this] = {
+    set: function()
+  };
+
+  //  webkit 老版本的 checkOn 默认值 是 ''
+  if (!jQuery.support.checkOn ) {
+    return elem.getAttribute('value') === null ? 'on' : elem.value;
+  }
+})
+
+
+</pre>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 49.001%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>49.001% 进度 代码共8830行/4318行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
+
