@@ -5238,12 +5238,13 @@ jQuery.removeEvent = function( elem, type, handle ) {
 };
 
 jQuery.Event = function( src, props ) {
-	// Allow instantiation without the 'new' keyword
+	// Allow instantiation without the 'new' keyworad
+	// 实例化省略 new
 	if ( !(this instanceof jQuery.Event) ) {
 		return new jQuery.Event( src, props );
 	}
 
-	// Event object
+	// Event object 原生事件对象
 	if ( src && src.type ) {
 		this.originalEvent = src;
 		this.type = src.type;
@@ -5277,12 +5278,14 @@ jQuery.Event.prototype = {
 	isPropagationStopped: returnFalse,
 	isImmediatePropagationStopped: returnFalse,
 
+	// prevent 防止 默认行为
 	preventDefault: function() {
 		var e = this.originalEvent;
 
 		this.isDefaultPrevented = returnTrue;
 
 		if ( e && e.preventDefault ) {
+			// 取消浏览器事件后的默认执行
 			e.preventDefault();
 		}
 	},
@@ -5410,9 +5413,11 @@ jQuery.fn.extend({
 			jQuery.event.add( this, types, fn, data, selector );
 		});
 	},
+	// 绑定过最多执行一次的事件监听
 	one: function( types, selector, data, fn ) {
 		return this.on( types, selector, data, fn, 1 );
 	},
+	// 移除方法
 	off: function( types, selector, fn ) {
 		var handleObj, type;
 		if ( types && types.preventDefault && types.handleObj ) {

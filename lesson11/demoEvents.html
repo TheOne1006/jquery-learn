@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - events案例</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>案例1</h1>
+      <p style='background:#ccc' id='event_p'>绑定click </p>
+
+    </div>
+
+
+  </div>
+
+
+</body>
+</html>
+<script>
+  $('#event_p').on('click', function(){
+    $.log('do something');
+    $(this).trigger('my.me1'); // 手动触发
+  });
+  // 原生click
+  var eventPObj = document.getElementById('event_p');
+  eventPObj.addEventListener('click',function(event){
+    $.log2(event);
+  });
+
+  /**
+   * 使用空间命名
+   */
+  $('#event_p')
+    .on('my.me1', function(){
+      $.log('In me 1');
+    })
+    .on('my.me2', function(){
+      $.log('In me 2');
+    })
+    .on('my.me1.me2', function(){
+      $.log('都使用了命名空间');
+    });
+
+</script>
