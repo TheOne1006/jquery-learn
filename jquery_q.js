@@ -4836,6 +4836,9 @@ jQuery.event = {
 		}
 	},
 
+	/**
+	  * onlyHandlers  - 布尔值,指示 是否只执行监听函数,而不会触发默认行为。
+	 */
 	trigger: function( event, data, elem, onlyHandlers ) {
 
 		var i, cur, tmp, bubbleType, ontype, handle, special,
@@ -4846,11 +4849,14 @@ jQuery.event = {
 		cur = tmp = elem = elem || document;
 
 		// Don't do events on text and comment nodes
+		// 1) 过滤 text and comment nodes
 		if ( elem.nodeType === 3 || elem.nodeType === 8 ) {
 			return;
 		}
 
 		// focus/blur morphs to focusin/out; ensure we're not firing them right now
+		// rfocusMorph = /^(?:focusinfocus|focusoutblur)$/,
+		// 统一 focus/blur 事件
 		if ( rfocusMorph.test( type + jQuery.event.triggered ) ) {
 			return;
 		}
@@ -4864,6 +4870,7 @@ jQuery.event = {
 		ontype = type.indexOf(":") < 0 && "on" + type;
 
 		// Caller can pass in a jQuery.Event object, Object, or just an event type string
+		// event 尝试转换成 jQuery.Event 事件
 		event = event[ jQuery.expando ] ?
 			event :
 			new jQuery.Event( type, typeof event === "object" && event );
@@ -4876,6 +4883,7 @@ jQuery.event = {
 			null;
 
 		// Clean up the event in case it is being reused
+		// 清理事件以防重复使用
 		event.result = undefined;
 		if ( !event.target ) {
 			event.target = elem;
@@ -4989,15 +4997,18 @@ jQuery.event = {
 		handlerQueue = jQuery.event.handlers.call( this, event, handlers );
 
 		// Run delegates first; they may want to stop propagation beneath us
+		// 遍历handlerQueue队列,同时event 没有停止事件传播
 		i = 0;
 		while ( (matched = handlerQueue[ i++ ]) && !event.isPropagationStopped() ) {
 			event.currentTarget = matched.elem;
 
 			j = 0;
+			// 获取对应的事件对象 同时event 没有禁止事件的执行
 			while ( (handleObj = matched.handlers[ j++ ]) && !event.isImmediatePropagationStopped() ) {
 
 				// Triggered event must either 1) have no namespace, or
 				// 2) have namespace(s) a subset or equal to those in the bound event (both can have no namespace).
+				// 没有命名空间 或者匹配到事件对象的命名
 				if ( !event.namespace_re || event.namespace_re.test( handleObj.namespace ) ) {
 
 					event.handleObj = handleObj;
@@ -5006,6 +5017,7 @@ jQuery.event = {
 					ret = ( (jQuery.event.special[ handleObj.origType ] || {}).handle || handleObj.handler )
 							.apply( matched.elem, args );
 
+					// 如果事件 ret 返回的是 false 则中止事件默认行为,停止事件传播 
 					if ( ret !== undefined ) {
 						if ( (event.result = ret) === false ) {
 							event.preventDefault();
@@ -5143,6 +5155,7 @@ jQuery.event = {
 
 		// Support: Cordova 2.5 (WebKit) (#13255)
 		// All events should have a target; Cordova deviceready doesn't
+		// target 表示当前触发事件的元素
 		if ( !event.target ) {
 			event.target = document;
 		}
@@ -5289,6 +5302,7 @@ jQuery.Event.prototype = {
 			e.preventDefault();
 		}
 	},
+	// 停止事件传播
 	stopPropagation: function() {
 		var e = this.originalEvent;
 
@@ -5298,6 +5312,7 @@ jQuery.Event.prototype = {
 			e.stopPropagation();
 		}
 	},
+	// 停止事件执行和传播
 	stopImmediatePropagation: function() {
 		this.isImmediatePropagationStopped = returnTrue;
 		this.stopPropagation();

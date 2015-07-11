@@ -23,6 +23,7 @@
     <div class="page-header">
       <h1>案例1</h1>
       <p style='background:#ccc' id='event_p'>绑定click </p>
+      <p id='event_off'> off 测试</p>
 
     </div>
 
@@ -56,5 +57,30 @@
     .on('my.me1.me2', function(){
       $.log('都使用了命名空间');
     });
+
+  /**
+   * 移除.off
+   */
+  function Removet ( n ){
+    return function () {
+        console.log('in remove '+n);
+    };
+  }
+  var rm1 = Removet(1);
+  var rm2 = Removet(2);
+
+  $('#event_off')
+    .on('test', rm1)
+    .on('test', rm2)
+    .off('test', rm2)
+    .trigger('test');
+
+  //- 为指定删除函数 则删除所有
+  $('#event_off')
+    .on('test1', rm1)
+    .on('test1', rm2)
+    .off('test1')
+    .trigger('test1');
+  
 
 </script>
