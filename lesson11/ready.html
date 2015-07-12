@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - :重要事件 ready</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>ready 事件<small> jQuery 处理 dom加载事件</small> </h1>
+      <ol>
+        <li>ready 触发早于 load
+          <ul>
+            <li> load用于监听文档加载完毕, 如图片等</li>
+            <li> ready DOM结构加载完成即可执行脚本</li>
+          </ul>
+        </li>
+        <li>
+          ready 触发关键
+          <ul>
+            <li> IE9+ /其他浏览器 绑定 DOMContentLoaded 事件</li>
+            <li> IE9以下绑定 onreadystatechange 事件</li>
+          </ul>
+        </li>
+      </ol>
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small>ready 调用</small> </legend>
+            <ul>
+              <li>$(fn)</li>
+              <li>$(document).ready()</li>
+              <li>$(document).on('ready',fn) <code> 触发ready 之前有效</code></li>
+
+            </ul>
+          </fieldset>
+        </div>
+      </div>
+  
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+<script>
+//- 模拟jQuery
+(function(window, undefined){
+  var _jQ =  (function( selector){
+    return new _jQ.prototype.init(selector);
+  }), // 模拟jQuery 构造函数
+
+  rootjQuery,
+  readyList = [], // 原来为 promise 对象
+
+  // 清除监听ready事件的监听函数  完成触发函数
+  completed = function(){
+    // 取消监听
+    document.removeEventListener( "DOMContentLoaded", completed, false );
+    // 取消 window对象 load windows load 完成监听事件 completed  
+    window.removeEventListener( "load", completed, false );
+    //并且执行 
+    _jQ.ready();
+  };
+
+  // 模拟构造函数
+  _jQ.prototype.init = function( selector) {
+    if( typeof selector === 'string') {
+      return 'only fn';
+    }else if( jQuery.isFunction( selector ) ) {
+      return readyList.push( selector );
+    }
+  };
+
+
+  _jQ.prototype.isReady = false;
+
+  // 成功后触发函数
+  _jQ.ready = function(){
+    _jQ.prototype.isReady = true;
+    var fn,tmp;
+    for(tmp in readyList) {
+      fn = readyList[tmp];
+      fn();
+    }
+  };
+
+//----- 原为 promise 对象中方法
+if(document.readyState == 'complete') {
+  setTimeout( _jQ.ready);
+}else{
+
+  // ie9 +
+  if( document.addEventListener) {
+    document.addEventListener('DOMContentLoaded', completed, false);
+    window.addEventListener( "load", completed, false );
+  }else if( document.attachEvent){
+    // ie9 以下
+    DOMContentLoaded = function(){
+      if( document !== 'complete') {
+        document.attachEvent('onreadystatechange', DOMContentLoaded);
+      }else{
+        _jQ.ready();
+      }
+    };
+    
+  }
+}
+
+
+
+  window._jQ = _jQ;
+})(window);
+
+_jQ(function(){
+  console.log('DOM结构加载完毕');
+});
+</script>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 58.074%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>58.074% 进度 代码共8830行/5128行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
+

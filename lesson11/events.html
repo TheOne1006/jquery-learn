@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>jQuery源码学习 - 第十一部分:line 4300，</title>
+  <title>jQuery源码学习 - 第十一部分 Event:line 4300,5128</title>
   <meta content="text/html;charset=utf-8" http-equiv="content-type">
   <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
   <script type="text/javascript" src='../jquery.js'></script>
@@ -45,8 +45,8 @@
               <li>keyHooks:{}</li>
               <li>mouseHooks:{}</li>
               <li>fix():</li>
-              <li>special:{}</li>
-              <li>simulate():</li>
+              <li>special:{} 对应type修正对象</li>
+              <li>simulate(): 为不支持冒泡事件模拟冒泡</li>
 
               <li> 特殊 jQuery.removeEvent(): <code>调用$.fn.removeEventLister()</code></li>
             </ul>
@@ -84,6 +84,23 @@
               <li>
                 triggerHandle: <code>调用 $.event.trigger</code>
               </li>
+            </ul>
+          </fieldset>
+        </div>
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small>$.event.special可能有的属性和方法</small> </legend>
+            <ul>
+              <li>noBubble:不支持或不允许冒泡</li>
+              <li>bindType:绑定普通事件使用的事件类型</li>
+              <li>delegateType:绑定代理对象时使用的事件类类型</li>
+              <li>setup(data,namespaces,eventHandle) 特殊的绑定主监听函数的绑定行为</li>
+              <li>teardown(namespaces): 特殊的主监听函数移除行为</li>
+              <li>handle</li>
+              <li>add</li>
+              <li>remove</li>
+              <li>trigger</li>
+              <li>_defalult: this 指向 document ,其他修正方法指向元素对象</li>
             </ul>
           </fieldset>
         </div>
@@ -858,8 +875,57 @@ jQuery.event = {
   }
 
   special:{} 事件修正对象集
+  /**
+   * 修正事件对象的绑定、代理、触发和移除行为
+   * 
+   */
+  {
+    load:{
+      // 不允许 load 事件冒泡,load 事件本身不冒泡
+      noBubble:true
+    },
+    focus:{
+      trigger(): ??,
+      delegaType:'facusin'
+    },
+    blur:{
+      trigger():??,
+      delegaType:'facusout'
+    },
+    click:{},
+    .....
+  }
+  
 
-  simulate(): 模拟事件
+  simulate(): 模拟事件冒泡:
+
+  function( type /* 事件类型*/, elem /*事件元素*/, event /* 事件对象*/, bubble /* 是否模拟冒泡*/) {
+    /**
+     * e 构造出一个新jQuery对象
+     */
+    var e = jQuery.extend(
+      new jQuery.Event(),
+      event,
+      {
+        type: type,
+        isSimulate:true,
+        originaEvent:{}
+      }
+    );
+
+    // if(支持冒泡){ 手动触发 模拟冒泡}
+    if ( bubble ) {
+      jQuery.event.trigger( e, null, elem );
+    } else {
+    // else 分发当前元素身上的执行事件
+      jQuery.event.dispatch.call( elem, e );
+    }
+
+    // 监听函数阻止默认行为则阻止默认行为
+    if ( e.isDefaultPrevented() ) {
+      event.preventDefault();
+    }
+  }
   
 }
 
@@ -1126,6 +1192,53 @@ jQuery.fn.extend({
   }
 });
 
+/**
+ * 快捷方式事件兼容
+ * 通过 mouseover/mouseout 模拟 mouseenter/mouseleave
+ */
+
+
+/**
+ * 通过功能检测模拟 冒泡的 focusin / focusout
+ */
+
+
+/**
+ * 事件快捷方式
+ */
+ jQuery.each( ("blur focus focusin focusout load resize scroll unload click dblclick " +
+  "mousedown mouseup mousemove mouseover mouseout mouseenter mouseleave " +
+  "change select submit keydown keypress keyup error contextmenu").split(" "), function( i, name ) {
+
+  // Handle event binding,根据参数判断绑定或触发
+  jQuery.fn[ name ] = function( data, fn ) {
+    return arguments.length > 0 ?
+      this.on( name, null, data, fn ) :
+      this.trigger( name );
+  };
+ });
+
+/**
+ * 事件快捷方式2
+ */
+jQuery.fn.extend({
+  
+  // hover 事件 为 mouseenter 和 mouselave 的组合
+  hover: function( fnOver, fnOut ) {
+    return this.mouseenter( fnOver ).mouseleave( fnOut || fnOver );
+  },
+  // 兼容老版本
+  bind: 相当于 .on
+  unbind: 相当于 .off
+
+  // 代理事件
+  delegate: function( selector, types, data, fn){
+    => .on
+  },
+  undelegate: 
+    根据参数个数指定解绑特定监听函数或者，相关类型所有函数
+})
+
 
 
 </pre>
@@ -1139,8 +1252,8 @@ jQuery.fn.extend({
     <div class='row'>
       <div class="col-md-12">
         <div class="progress">
-          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 49.001%;background:#428bca">
-            <span style='min-width: 20px;color:#fff'>49.001% 进度 代码共8830行/4318行</span>
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 58.074%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>58.074% 进度 代码共8830行/5128行</span>
           </div>
         </div>
       </div>

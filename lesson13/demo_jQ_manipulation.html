@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - jQuery dom操作案例 </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>jQuery DOM 操作</h1>
+      <hr />
+      <h2>内部插入</h2>
+      <div id='div1'>
+        <div id='p1' style="background:#ccc" > 内部插入</div>
+      </div>
+      <hr>
+      <h2>外部插入</h2>
+      <div id="div2">
+        <div id="p2" style='background:#eee'>外部插入</div>
+      </div>
+
+      <h3>删除元素</h3>
+      <div id="div3">
+        <div id="remove1"> 删除1 </div>
+        <div id="remove2"> 删除2 </div>
+        <div id="remove3"> 删除3 </div>
+      </div>
+
+      <h3>复制元素</h3>
+      <div id="div4">
+        <span id="span_clone"> 复制内容</span>
+        <div id="clone2"> </div>
+      </div>
+
+      <h3>替换元素</h3>
+      <div id="div5">
+        <div id="replace1"> 替换 </div>
+        <div id="replace2"> 替换2 </div>
+      </div>
+
+      <h3>包裹元素</h3>
+      <div id="div6">
+        <div id="wrap"> 包裹元素</div>
+      </div>
+
+
+
+  </div>
+
+
+</body>
+</html>
+<script>
+
+  // tool fn
+  function newjqDom (nodeName, html){
+    return $('<'+nodeName+'>',{'html':html});
+  }
+  /**
+   * 内部插入元素
+   */
+  $('#div1').append( newjqDom('div', 'append html') ); // 最后插入
+  $('#div1').prepend( newjqDom('div', 'prepend html') , '<div>可插入多个</div>'); // 第一子元素插入
+
+  // 将目标插入到参数中 .appendTo( target ) .prependTo( target )
+  $('<div>',{'html':'appendTo #div1'}).appendTo('#div1');
+  $('<div>',{'html':'prependTo #div1'}).prependTo('#div1');
+  // text() html()
+
+  /**
+   * 外部插入元素
+   */
+  $('#p2').after( newjqDom('div', 'after'));
+  $('#p2').before( newjqDom('div', 'before'));
+
+  // .insertAfter( target ) .insertBefore( target )
+  $('<div>',{'html':'insertAfter'}).insertAfter( $('#p2') );
+  $('<div>',{'html':'insertBefore'}).insertBefore( $('#p2') );
+
+  /**
+   * 删除元素
+   */
+  $('#remove1').remove(); // 删除元素
+  $('#remove2').empty();  // 清空内容
+  $('#remove3').detach(); // 删除元素
+
+/**
+ * 复制元素
+ */
+$('#clone2').html( $('#span_clone').clone() );
+
+/**
+ * 替换元素
+ */
+$('#replace1').replaceWith(' 已替换1 ');
+$('#replace2').replaceAll(' 已替换2 '); // ?
+
+
+/**
+ * 包裹元素 ??
+ */
+$('#wrap').wrapInner('wrap html');
+
+
+
+
+
+</script>

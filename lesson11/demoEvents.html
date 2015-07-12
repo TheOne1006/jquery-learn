@@ -24,8 +24,21 @@
       <h1>案例1</h1>
       <p style='background:#ccc' id='event_p'>绑定click </p>
       <p id='event_off'> off 测试</p>
-
+      <div id='event_bubble'>
+        <p id='event_bub_p'>
+          <a href="javascript:;" id='event_bub_a'>
+            冒泡测试:模拟冒泡的事件对原生事件的触发
+          </a>
+        </p>
+      </div>
     </div>
+
+    <hr>
+    <p>
+      <a href='javascript:;' id='event_delegate_a'>
+        使用代理事件触发
+      </a>
+    </p>
 
 
   </div>
@@ -81,6 +94,34 @@
     .on('test1', rm2)
     .off('test1')
     .trigger('test1');
-  
+</script>
+<script>
+  //- 测试冒泡
+  $("#event_bub_a").on('click',function(jQueryEvent){
+    // 阻止事件冒泡
+    // jQueryEvent.stopPropagation();
 
+    $.log('测试冒泡 in event a');
+  });
+
+  $('#event_bub_p').get(0).onclick = function (e) {
+    $.log('原生冒泡事件,in p 阻止继续冒泡');
+    // 原生阻止事件冒泡
+    // e.stopPropagation();
+  };
+
+  $('#event_bubble').get(0).onclick =  function(){
+    $.log('原生event.click in div');
+  };
+
+  $('#event_bubble').get(0).addEventListener('click',function(){
+    $.log('原生addEventListener.click in div');
+  }, false);
+</script>
+
+<script>
+  // 代理事件触发
+  $(document).on('click','#event_delegate_a',function(){
+    $.log('代理事件触发 to event_delegate_a');
+  });
 </script>

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第十二部分 Traversing:line 5129,5412 </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>Traversing <small>DOM遍历</small> </h1>
+      <ol>
+        <li> DOM遍历实现采用了"模板模式"</li>
+      </ol>
+
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small> dom 遍历相关 实例方法1</small> </legend>
+            <ul>
+              <li>$.fn.find() :<code>$.contains + pushStack</code> </li>
+              <li>$.fn.has() :<code>$.contains</code></li>
+              <li>$.fn.not() : winnow </li>
+              <li>$.fn.filter() : winnow </li>
+              <li>$.fn.is() : winnow </li>
+              <li>$.fn.closet() </li>
+              <li>$.fn.index() </li>
+              <li>$.fn.add() </li>
+              <li>$.fn.addBack() </li>
+            </ul>
+          </fieldset>
+        </div>
+
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small> dom 遍历相关 实例方法2(通过模板模式实现)</small> </legend>
+            <ul>
+              <li> $.fn.parent() 获取每个元素的父元素</li> 
+              <li> $.fn.parents() 每个元素的祖先元素</li> 
+              <li> $.fn.parentsUntil(selector [,filter]) 匹配祖先元素 寻找 selector </li> 
+              <li> $.fn.next() 每个元素之后的兄弟元素 </li> 
+              <li> $.fn.prev() 每个元素之前的兄弟元素 </li>
+              <li> $.fn.nextAll() 每个元素之后的所有兄弟元素 </li>
+              <li> $.fn.prevAll() 每个元素之前的所有兄弟元素 </li> 
+              <li> $.fn.nextUntil() </li> 
+              <li> $.fn.prevUntil() </li> 
+              <li> $.fn.siblings() 获取所有兄弟元素</li> 
+              <li> $.fn.children() 获取子元素,不包括文本节点、注释节点</li> 
+              <li> $.fn.contents() </li> 
+            </ul>
+          </fieldset>
+        </div>
+
+
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small> dom 遍历相关 工具方法</small> </legend>
+            <ul>
+              <li>filter() </li>
+              <li>dir() </li>
+              <li>sibling() </li>
+            </ul>
+          </fieldset>
+        </div>
+
+      </div>
+
+    </div>
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+<pre>
+/**
+ * 私有变量
+ */
+ var isSimple = /^.[^:#\[\.,]*$/,
+  rparentsprev = /^(?:parents|prev(?:Until|All))/,
+  rneedsContext = jQuery.expr.match.needsContext,
+//- 需要对获得数组进行unique的类型
+  guaranteedUnique = {
+    children: true,
+    contents: true,
+    next: true,
+    prev: true
+  };
+
+/**
+ * 扩展实例方法
+ */
+jQuery.fn.extend({
+  find(): 查找表达式的元素
+  /**
+   * selector  选择表达式 
+   */
+  function( selector ) {
+    var i,
+      ret = [],          // 最终数组
+      self = this,       // 保持上下文
+      len = self.length; // 当前元素个数
+
+    // 过滤selector 的类型不为string
+    if( typeof selector !== "string" ) {
+      // 返回一个有入栈的 jQ对象
+      return this.pushStack( jQuery( selector )
+          .filter(function(){
+            for ( i = 0; i< len; i++ ) {
+              // self[i] 是否包含子元素 this
+              if(jQuery.contains( self[i], this)) {
+                return true;
+              }
+            }
+          })
+        );
+    }
+
+    // ?? sizzle 选择器
+    for ( i = 0; i < len; i++ ) {
+      jQuery.find( selector, self[ i ], ret );
+    }
+
+    // 入栈生成新的jQuery对象
+    ret = this.pushStach( len > 1 ? jQuery.unique(ret) : ret );
+    ret.selector = this.selector ? this.selector + " " +selector;
+
+    return ret;
+  },
+
+  has(): 是否有包含 表达式中的元素
+  function( target ) {
+    // jQuery( selector, context )
+    var targets = jQuery( target, this ),
+      l = targets.length;
+
+    return this.filter( function() {
+      var i = 0;
+      for( ; i < l; i++ ) {
+        //- 是否包含元素表达式在 this 中
+        if( jQuery.contains( this, targets[i] ) ) {
+          return true;
+        }
+      }
+    });
+  },
+  not(): 不包含选择器
+  function( selector ) {
+    // 通过 winnow 私有方法选择 元素 
+    return this.pushStack( winnow(this, selector || [], true) );
+  },
+  filter(): 
+  function( selector ) {
+    // 调用私有 winnow方法
+  },
+  is(): ??
+
+  closest():
+
+  index(): 元素位于父元素的位置
+
+  function( elem ) {
+
+    // 1) 没有参数获取位置
+    if( !elem ) {
+      // (第一个元素有父类 ? 获取第一个元素之前兄弟元素的长度 : 没找到 -1)
+      return ( this[0] && this[0].parentNode )? this.first().prevAll().length : -1;
+    }
+
+    // 2) elem参数为string, 当前 this[0] 在 选择器中的位置
+    if( typeof elem === "string" ) {
+      return core_indexOf.call( jQuery(elem), this[0]);
+    }
+
+    // 3) 获取索引元素 或 获取？？
+    return core_indexOf.call( this, 
+      elem.jQuery ? elem[ 0 ] : elem
+    )
+  },
+
+  add(): 添加选择器的元素 并且 unique
+  addBack(): ???
+
+});
+
+// 私有变量 ???
+function sibling( cur, dir ) {
+  
+}
+
+/**
+ * 扩展实例方法2 模板模式
+ */
+jQuery.each({
+  parent: function( elem ) {
+    var parent = elem.parentNode;
+    // 不为文档碎片
+    return parent && parent.nodeType !== 11 ? parent : null;
+  },
+  parents: function( elem) {
+    // 调用工具方法 $.dir
+    return jQuery.dir( elem, "parentNode");
+  },
+  parentsUntil(): function( elem, i, until ) {
+    // 调用工具方法 $.dir
+    return jQuery.dir( elem, "parentNode", until );
+  },
+  next: function(elem){
+    // 私有方法 sibling()
+    return sibling( elem, "nextSibling" );
+  },
+  prev: function( elem ) {
+    // 私有方法 sibling()
+    return sibling( elem, "previousSibling" );
+  },
+  nextAll: function( elem ) {
+    // 调用$.dir
+    return jQuery.dir( elem, "nextSibling");
+  },
+  prevAll: function( elem ) {
+    // 调用 $.dir
+    return jQuery.dir( elem, "previousSibling" );
+  },
+  nextUntil: function( elem, i, until ) {
+    return jQuery.dir( elem, "nextSibling", until );
+  },
+  prevUntil: function( elem, i, until ) {
+    return jQuery.dir( elem, "previouseSibling", until );
+  },
+  siblings: function( elem ) {
+    // 调用 $.sibling
+    return jQuery.sibling( (elem.parentNode || {}).firstChild, elem );
+  },
+  children: function( elem ) {
+    // sibling
+    return jQuery.sibling( elem.firstChild );
+  },
+  contents: function( elem ) {
+
+    // 返回 指定DOM子元素,包括文本节点、注释节点或者iframe 元素的document 对象
+    return elem.contentDocument || jQuery.merge( [], elem.childNodes );
+  }
+
+  
+}, function( name /*dom遍历方法*/, fn /*执行方法*/ ) {
+
+  /**
+   * 定义模板函数
+   * until    选择器表达式,用于指示查找停止位置
+   * selector 选择器表达式,用于过滤找到元素
+   * @return [metched]
+   */
+  jQuery.fn[name] = function( until, selector ) {
+    // 通过map 返回匹配 [],map 第三个参数作为参数传入
+    var matched = jQuery.map( this, fn, until );
+
+    // 名字后5位 === "Until"
+    if( name.slice( -5 ) !== "Until" ) {
+      selector = until;
+    }
+
+    // 对数组诸葛过滤,保留符合 selector的数组
+    if ( selector && typeof selector === "string" ) {
+      matched = jQuery.filter( selector, matched );
+    }
+
+    if( this.length > 1) {
+      // 需要进行去重的dom遍历
+      jQuery.unique( matched );
+    }
+
+    /**
+     * rparentsprev = /^(?:parents|prev(?:Until|All))/
+     * 匹配parents,parents
+     * 'parents','parentsUntil', 'prevUntil','prevAll'
+     */
+    if( rparentsprev.test( name ) ) {
+      matched.reverse(); // 数组翻转
+    }
+
+    return this.pushStack( matched ); // 数组入栈
+  }
+});
+
+/**
+ * 扩展工具方法
+ */
+jQuery.extend({
+  filter(): 过滤元素
+
+  function ( expr, elems, not ) {
+
+    var elem = elems[ 0 ];
+
+    // 取反
+    if( not ) {
+      expr = ":not ( " + expr + " ) ";
+    }
+
+    // ( elems 只有元素)
+    return elems.length === 1 && elem.nodeType === 1 ?
+      // 匹配成功 则返回 [ 元素 ]
+      jQuery.find.matchesSelector( elem, expr ) ? [ elem ] : [ ] :
+      // ??
+      jQuery.find.matches( expr, jQuery.grep(elems, function (elem) {
+        return elem.nodeType === 1;
+      }));
+
+  }
+
+  dir(): 从一个元素出发，查找某个方向上的所有元素
+  /**
+   * @param elem  查找起始元素
+   * @param dir   查找方向,可选值"parentNode","nextSibling","previousSibling"
+   * @param until 可选的选择器表达式,表示种植查找位置。如果找到匹配元素,则查找终止
+   * @return 匹配的元素的数组
+   */
+  function ( elem, dir, until ) {
+    var matched = [], // 可匹配数组
+      truncate = until  !== undefined; // 是否需要截断
+
+    // while 往 dir 方向遍历,不为document
+    while( (elem = elem[dir]) && elem.nodeType !== 9 ) {
+      // 需要节点类型为元素
+      if( elem.nodeType === 1 ) {
+
+        // 如果 设置了untile,并且找到了对应的元素 则终止查找
+        if( truncate && jQuery( elem ).is( nutil ) ) {
+          break;
+        }
+
+        matched.push( elem ); // 添加到匹配的元素数组
+      }
+    }
+  }
+
+  sibling(): 负责查找一个元素之后的所有兄弟元素，但不包括参数 elem
+  /**
+   * @param  n    查找起始元素,包含在返回结果中
+   * @param  elem 可选dom元素，不包括在返回结果中。
+   * @return 匹配的元素的数组
+   */
+  function (n, elem){
+    var metched = [];
+
+    for (; n; n = n.nextSibling ) {
+      if( n.nodeType === 1 && n !== elem ) {
+        metched.push( n );
+      }
+    }
+
+    return matched;
+  }
+
+});
+
+/**
+ * 实现过滤器和不相同的功能
+ * 私有方法 winnow
+ * 需要 $.grep (elem, callback, inv)
+ * qualifier 筛选
+ */
+function winnow( elements, qualifier, not ) {
+  
+  // 1) 参数qualifer 为fn, 功能为通过 qualifier 函数过滤
+  if ( jQuery.isFunction( qualifier ) ) {
+    return jQuery.grep ( elements, function(){
+      return !!qualifier.call( elem, i, elem) !== not
+    });
+  }
+
+  // 2) 参数qualifer 为dom元素, 找到 elements 中是否有 qualifier 元素
+  if( qualifier.nodeType ) {
+    return jQuery.grep( elements, function( elem ) {
+      return (elem === qualifier ) !== not;
+    })
+  }
+
+  //??? 3) 参数qualifer 为string,
+  if( typeof qualifier === "string" ) {
+    // var isSimple = /^.[^:#\[\.,]*$/,
+    
+
+  }
+
+
+
+}
+
+</pre>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 61.291%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>61.291% 进度 代码共8830行/5412行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
+

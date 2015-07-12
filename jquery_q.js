@@ -5220,6 +5220,8 @@ jQuery.event = {
 		}
 	},
 
+	// 通过原生事件或者jQuery事件对象为不支持冒泡的事件,模拟冒泡
+	// simulate[模拟]
 	simulate: function( type, elem, event, bubble ) {
 		// Piggyback on a donor event to simulate a different one.
 		// Fake originalEvent to avoid donor's stopPropagation, but if the
@@ -5679,6 +5681,8 @@ jQuery.each({
 			}
 
 			// Reverse order for parents* and prev-derivatives
+			// 'parents','parentsUntil'
+			// 'prevUntil','prevAll'
 			if ( rparentsprev.test( name ) ) {
 				matched.reverse();
 			}
