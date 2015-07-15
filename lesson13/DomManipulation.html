@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>jQuery源码学习 - 第十二部分 DomManipulation:line 5413, </title>
+  <title>jQuery源码学习 - 第十二部分 DomManipulation:line 5413,6057 </title>
   <meta content="text/html;charset=utf-8" http-equiv="content-type">
   <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
   <script type="text/javascript" src='../jquery.js'></script>
@@ -96,6 +96,426 @@
 <pre>
 
 
+/**
+ * $.fn 实例方法
+ */
+jQuery.fn.extend({
+  text(): 设置/获得文本内容
+  function( value ) {
+    var fn = function (value) {
+      return value === undefined ?
+        jQuery.text( this ):
+
+        //- 晴空后重新 append
+        this.empty().append( (this[0] && this[0].ownerDocument || document ).createTextNode( value ) ); 
+
+    };
+    return jQuery.access( this, fn ,null, value ,arguments.length );
+  },
+
+  append(): 添加子元素于最后
+  function(){
+    /**
+     * elem dom节点/片段
+     */
+    var fn = function( elem ) {
+      if( this.nodeType === 1){
+        
+      }
+    };
+    return this.domMaip(arguments, fn); 
+  },
+  prepend():
+
+  before():
+
+  after():
+
+  remove(): 删除
+  /**
+   * selector 过滤
+   * keepData 内部使用, 保留 事件和相关元素
+   */
+  function( selector, keepData ) {
+    var elem,
+      elems = selector ? jQuery.filter( selector , this): this, // 过滤
+      i = 0;
+
+    for( ; (elem = elems[i]) != null ; i++ ) {
+
+      // 没有保持信息
+      if( !keepData && elem.nodeType === 1) {
+        // 先移除后台元素和匹配元素的相关素具 和 事件,避免内存泄露,然后在进行移除
+        jQuery.cleanData( getAll(elem) );
+      }
+
+      //- 父元素存在
+      if( elem.parentNode ) {
+
+        // 内部
+        if( ) {
+          // ....
+        }
+
+        // 移除
+        elem.parentNode.removeChild( elem );
+      }
+
+
+    }
+
+    return this;
+  },
+
+  empty(): 清空
+  
+  clone(): 克隆
+  /**
+   * dataAndEvents 克隆事件和data
+   * deepDataAndEvents 深复制数据和事件
+   */
+  function(dataAndEvents, deepDataAndEvents ) {
+    // 参数容错
+    dataAndEvents = (dataAndEvents == null) ? false : dataAndEvents;
+    deepDataAndEvents = (deepDataAndEvents == null)? dataAndEvents : deepDataAndEvents;
+
+    // map 克隆
+    return this.map( function () {
+      return jQuery.clone( this, dataAndEvents, deepDataAndEvents );
+    });
+  }
+
+  html():
+
+  replaceWirh(): 替换元素
+  function () {
+    var arg = jQuery.map( this, function( elem ) {
+      return [ elem.nextSibling, elem.parentNode];
+    }),
+    i = 0;
+
+    // 替换domManip
+    this.doManip( arguments, function(elem) {
+      var next = args[ i++ ],
+        parent = args[ i++ ];
+
+      //- 父级元素存在
+      if( parent ){
+        // ??
+        if( next && next.parentNode !== parent ) {
+          next = this.nextSibling;
+        }
+        jQuery(this).remove();
+        parent.insertBefore(elem, next);
+      }
+
+    }, true );
+
+    return i ? this : this.remove();
+
+
+  }
+
+
+  detach(): 删除元素,保留信息
+
+  doManip():
+
+
+})
+
+
+/**
+ * appendTo,prependTo,insertBefore,insertAfter,replaceAll
+ */
+jQuery.each({
+  appendTo:"append",
+  prependTo:"prepend",
+  insertBefore:"before",
+  insertAfter:"after",
+  replaceAll:"replaceWith"
+  /**
+   * name : key (appendTo\prependTo\)
+   * original: value ( 原始方法 )
+   */
+}).function(name, original ){
+  /**
+   * 遍历定义新到实例方法
+   */
+  jQuery.fn[ name ] = function( selector ) {
+
+    var elems,                    //
+      ret = [],                   //
+      insert = jQuery(selector),  // target
+      last = insert.length -1,    // target 最后一个元素的位置
+      i = 0;
+
+      for (; i <= last ; i++ ) {
+        // elems 只要不是最后一个 都是以克隆方式传送
+        elems = ( (i === last) ? this : this.clone(true) );
+        // 调用原来的 orginal 方法
+        jQuery( insert[i] )[ orginal ]( elems );
+
+        // 将原来的集合 合并入ret
+        core_push.apply( ret, elems.get() );
+      }
+
+      // 通过pushStack 入栈
+      return this.pushStack( ret );
+  }
+}
+
+/**
+ * 工具方法
+ */
+jQuery.extend({
+  clone(): 克隆的工具函数
+  /**
+   * elem 对象元素
+   * dataAndEvents boolean 保持事件和对象
+   * deepDataAndEvents boolean 深度保持
+   */
+  fuction( elem, dataAndEvents, deepDataAndEvents ) {
+    var i,
+      l,
+      srcElements,
+      destElements,
+      clone = elem.cloneNode( true),
+      inPage = jQuery.contains( elem.ownerDocument, elem);
+
+    //- 兼容 ie9+
+    if( !jQuery.support.noCloneChecked && ( elem.nodeType === 1 || elem.nodeType === 11 ) && !jQuery.isXMLDoc( elem ) ) {
+
+      //...
+    }
+
+    // 克隆事件和data
+    if( dataAndEvents ) {
+      // 深度克隆
+      if( deepDataAndEvents ) {
+        // 尝试获取原始元素
+        srcElements = srcElements || getAll( elem );
+        // 目标元素
+        destElements = destElements || getAll( clone );
+
+        for( i=0, l = srcElements.length; i < l; i++) {
+          // 对应复制属性和事件
+          cloneCopyEvent( srcElements[i], destElements[i] );
+        }
+      }else{
+        cloneCopyEvent( elem, clone);
+      }
+    }
+
+
+    // script 处理
+
+  }
+
+  buildFragment(): 创建文档碎片
+
+  cleanData(): 清除
+  /**
+   * elems 元素集合
+   */
+  function( elems ) {
+    var data,
+      elem,
+      events,
+      type,
+      key,
+      j,
+      special = jQuery.event.special,
+      i = 0;
+
+    // 迭代集合
+    for( ; (elem = elems[i]) !== undefined; i++ ) {
+      //- 允许操作元素
+      if( Data.accepts(elem) ) {
+        key = elem[ data_priv.expando ]; // 获取key
+
+        if( key && (data = data_priv.cache[ key ]) ){
+         // 返回一个数组，数组里是该obj可被枚举的所有属性
+         events = Object.keys( data.events || {} );
+
+         if( event.length ) {
+
+          // 遍历删除事件资源
+          for ( j = 0; (type = events[j]) !== undefined; j++ ) {
+            if ( special[ type ] ) {
+              jQuery.event.remove( elem, type );
+            } else {
+              // 如果清空则 删除主监听函数
+              jQuery.removeEvent( elem, type, data.handle );
+            }
+          }
+
+         }
+
+         // 同时删除私有缓存
+         if ( data_priv.cache[ key ] ) {
+          delete data_priv.cache[ key ];
+         }
+        }
+
+      }
+
+
+      //- 尝试删除 data_user的元素的缓存信息
+      delete data_user.cache[ elem[ data_user.expando ] ];
+
+    }
+
+  }
+
+  _evalUrl():
+
+});
+
+/**
+ * 私有方法
+ */
+function manipulationTarget( elem, content ) {
+  兼容table 的dom操作
+}
+
+function disableScript(elem) {
+  // ??
+}
+
+
+/**
+ * 获取原始元素和副本元素的所有后台元素
+ * context 上下文
+ * tag     获取相关 tag
+ */
+function getAll (context, tag) {
+  /**
+   * ret 尝试从 getElementsByTagName,和querySelector
+   */
+  var ret = context.getElementsByTagName ?
+    context.getELementsByTagName( tag || '*' ) :
+      context.querySelectorAll ? 
+      context.querySelectorAll( tag || "*" ) :
+      [];
+
+    // ???
+    return ( (tag == undefined || tag) && jQuery.nodeName( context, tag) ) ?
+      jQuery.merge( [context], ret):
+      ret; 
+}
+
+/**
+ * 复制数据和事件
+ */
+function cloneCopyEvent( src, dest) {
+  var i,
+    l,
+    type,
+    pdataOld,         //priv Old
+    pdataCur,         //priv Cur
+    udataOld,         //user Old
+    udataCur,         //user Cur
+    events;
+
+  // 过滤dest 不是元素
+  if( dest.nodeType !== 1 ) {
+    return;
+  }
+
+  /**
+   * 1) 复制data_priv 数据
+   */
+  if( data_priv.hasData( src ) ) {
+    pdataOld = data_priv.access( src );
+    pdataCur = data_priv.set( dest, pdataOld );
+    events = pdataOld.events;
+
+    if( events ) {
+      delete pdataCur.handle; // 删除原handle
+      pdataCur.evnets = {};   // 初始化
+
+      for ( type in events ) {
+        // 遍历复制事件需要的data信息
+        for ( i = 0, l = events[ type ].length; i < l; i++ ) {
+          jQuery.event.add( dest, type, events[ type ][ i ] );
+        }
+      }
+
+    }
+  }
+
+
+  // 复制data_user
+  if ( data_user.hasData( src ) ) {
+    udataOld = data_user.access( src );
+    udataCur = jQuery.extend( {}, udataOld );
+
+    data_user.set( dest, udataCur );
+  }
+
+}
+
+
+/**
+ * 实例方法
+ */
+jQuery.fn.extend({
+  wrapAll: 包裹元素
+  function( html ) {
+    var wrap; // 创建 wrap 元素
+
+    // 过滤 fn 方法
+    if( jQuery.isFunction( html ) ) {
+      return this.each( function( i ) {
+        jQuery( this ).wrapAll( html.call(this, i) );
+      });
+    }
+
+    if( this[0] ) {
+
+      // 生成wrap 元素
+      wrap = jQuery( html, this[ 0 ].ownerDocument ).eq( 0 ).clone( true );
+
+      // 如果当前匹配元素有父元素,则把创建的包裹元素插入第一个匹配元素之前
+      if( this[0].parentNode ) {
+        wrap.insertBefore( this[0] );
+      }
+
+
+      // 遍历到最底层在append( this )
+      wrap.map( function(){
+        var elem = this;
+
+        while( elem.firstElementChild ){
+          elem = elem.firstElementChild;
+        }
+
+        return elem;
+      }).append( this);
+    }
+    return this;
+  },
+
+  wrapIner(): 内包裹 同wrapAll
+
+  wrap(): 匹配每个元素的 wrapAll()
+
+  unwrap(): 取出集合父元素
+  function() {
+    // 入栈后chuzhan
+    // .parent().end();
+    // 父元素 通过 .repliceWith( 所有子元素 )
+    return this.parent().each( function(){
+      if( !jQuery.nodeName( this, "body")) {
+        jQuery(this).repliceWith( this.childNodes );
+      }
+    }).end();
+  }
+})
+
+
+
 </pre>
 
 
@@ -107,8 +527,8 @@
     <div class='row'>
       <div class="col-md-12">
         <div class="progress">
-          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 61.291%;background:#428bca">
-            <span style='min-width: 20px;color:#fff'>61.291% 进度 代码共8830行/5412行</span>
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 68.596%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>68.596% 进度 代码共8830行/6057行</span>
           </div>
         </div>
       </div>

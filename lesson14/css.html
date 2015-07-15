@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第十三部分 CSS :line 6058, </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>CSS操作,主要解决问题</h1>
+      <ol>
+        <li> 兼容浏览器</li>
+        <li> 兼容驼峰和连字符式样式名</li>
+        <li> 简化样式读取设置</li>
+      </ol>
+
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small>私有变量 </small> </legend>
+            <ul>
+              <li> </li>
+            </ul>
+          </fieldset>
+        </div>
+
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small>私有函数 </small> </legend>
+            <ul>
+              <li> getStyles(): </li>
+            </ul>
+          </fieldset>
+        </div>
+
+
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small> $.fn 实例方法</small> </legend>
+            <ul>
+              <li> $.fn.css(): 调用 <code> getSyles() / $.style() </code> </li>
+              <li> $.fn.show(): 调用 <code> 私有方法 showHide()</code> </li>
+              <li> $.fn.hide(): 调用 <code> 私有方法showHide();</code></li>
+              <li>
+                $.fn.toggle(): 调用 <code> $.fn.show(), $.fn.hide()</code>
+              </li>
+
+            </ul>
+          </fieldset>
+        </div>
+
+
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small> DOM操作 工具方法 </small> </legend>
+            <ul>
+              <li> $.cssHooks: hook对象</li>
+              <li> $.cssNumber: </li>
+              <li> $.cssProps: </li>
+              <li> $.style(): </li>
+              <li> $.css </li>
+            </ul>
+          </fieldset>
+        </div>
+
+      </div>
+
+    </div>
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> CSS 操作</div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+<pre>
+/**
+ * 私有变量
+ */
+var curCSS,
+  iframe,
+
+
+
+
+
+</pre>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 68.596%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>68.596% 进度 代码共8830行/6057行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
+

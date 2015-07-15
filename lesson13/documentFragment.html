@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - : dom 操作- documentFragment </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>  documentFragment </h1>
+      <ol>
+        <li> documentFragment 是一种特殊的Node，它作为其他节点的临时容器。(一次性添加到文档中,减少渲染)</li>
+        <li> 创建 var frag = document.createDocumentFragment();</li>
+        <li>像Document节点一样，DocumentFragment是独立的，而不是其他文档的一部分</li>
+        <li>它的parentNode 总是null,但类似Element,可以有多个子节点如:appednChild()、insertBefore()</li>
+        <li> <code>特殊:</code> 使得一组节点被当做一个节点看待。 </li>
+        <li> 最后将文档片段的子节点插入文档中(而非片段本身,清空以便重用)</li>
+        <li></li>
+      </ol>
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small></small> </legend>
+        
+          </fieldset>
+        </div>
+      </div>
+      <div class="row">
+        <div id="frag">
+          文档碎片
+        </div>
+      </div>
+  </div>
+
+
+</body>
+</html>
+<script>
+  var fragD = document.createDocumentFragment();
+  // - 创建多个文档
+  var newDom = document.createElement('div');
+    newDom.innerHTML = '新文档碎片';
+  var dom2 = document.createElement('p');
+    dom2.innerHTML = '新文档碎片2';
+  fragD.appendChild(newDom);
+  fragD.appendChild(dom2);
+
+  var frag =  document.getElementById('frag');
+  // 一次插入 frag
+  frag.appendChild(fragD);
+
+  //
+
+
+  
+</script>
+

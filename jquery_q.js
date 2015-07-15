@@ -6208,6 +6208,7 @@ jQuery.extend({
 				key = elem[ data_priv.expando ];
 
 				if ( key && (data = data_priv.cache[ key ]) ) {
+					// 返回一个数组，数组里是该obj可被枚举的所有属性
 					events = Object.keys( data.events || {} );
 					if ( events.length ) {
 						for ( j = 0; (type = events[j]) !== undefined; j++ ) {

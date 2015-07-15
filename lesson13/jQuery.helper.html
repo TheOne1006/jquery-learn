@@ -24,14 +24,21 @@
       <h1> dom 操作-帮助函数</h1>
       <ol>
         <li> $.buildFragment() </li>
-        <li> $.clean() </li>
+        <li> $.fn.domMaip </li>
       </ol>
       <div class="row">
         <div class="col-md-6">
           <fieldset>
             <legend> <small>$.buildFragment</small> </legend>
             <ul>
-              <li> </li>
+              <li>DOM原生的接口是即简单又单一，参数类型确定，也不会重载，每次只会处理一个元素。</li>
+              <li>1) 分解类型，jQuery对象，节点对象，文本，字符串，脚本</li>
+              <li>2) 引入nodes收集各种分解的类型数据 </li>
+              <li>3) 针对html节点，兼容IE的处理，先过滤空白，然后补全tr,td等</li>
+              <li>4) 创建文档碎片的div包含节点,把html结构给innerHTML进去 </li>
+              <li>5) 
+                取出创建的节点, jQuery.merge(nodes, tmp.childNodes),因为靠div包装过
+              </li>
 
             </ul>
           </fieldset>
@@ -44,11 +51,294 @@
       <h4>
         伪代码结构
       </h4>
+      <div id='testfrag'>
+        
+      </div>
+
+      <div id="append">
+        <ul>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+      </div>
 <script>
 
+var rhtml = /<|&#?\w+;/,
+  rtagName = /<([\w:]+)/,
+  rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([\w:]+)[^>]*)\/>/gi,
+  // wrapMap 对象为 buildFragment一些特殊的标签不能单独存在
+  wrapMap = {
+
+    // Support: IE 9
+    option: [ 1, "<select multiple='multiple'>", "</select>" ],
+
+    thead: [ 1, "<table>", "</table>" ],
+    col: [ 2, "<table><colgroup>", "</colgroup></table>" ],
+    tr: [ 2, "<table><tbody>", "</tbody></table>" ],
+    td: [ 3, "<table><tbody><tr>", "</tr></tbody></table>" ],
+
+    _default: [ 0, "", "" ]
+  };
+  // Support: IE 9
+  wrapMap.optgroup = wrapMap.option;
+
+  wrapMap.tbody = wrapMap.tfoot = wrapMap.colgroup = wrapMap.caption = wrapMap.thead;
+  wrapMap.th = wrapMap.td;
+
+
+/**
+ * 模拟buildFragment,创建文档片段
+ * elems     数组,含有待转换的 dom元素,html代码
+ * context   上下文环境,创建文档片段的上下文环境
+ * scripts   数组,用于存放html代码中的script元素
+ * selection 数组,只有selection 数组中的元素才会被添加
+ */
+function buildFragment( elems,context, scripts, selection ) {
+
+  /**
+   * 变量初始化
+   */
+  var elem,          // 遍历elems 的变量
+    tmp,             // 文档碎片的div 容器
+    tag, 
+    wrap,
+    contains,
+    j,
+    i = 0,             
+    l = elems.length,   // 参数elems的长度
+    fragment = context.createDocumentFragment(), //通过上下文创造的文档碎片
+    nodes = []; // 存储节点对象
+
+    // for遍历 elems数组
+    for( ;i<l;i++){
+      elem = elems[i]; // 获取单个elem
+
+      // 过滤elem
+      if( elem || elem === 0) {
+
+        // 如果是jQuery对象直接放入merge
+        // 如果是普通元素对象加[elem],再放入nodes中
+        if( $.type(elem) === 'object' ) {
+          $.merge(nodes, elem.nodeType ? [ elem ]: elem);
+
+        // rhtml = /<|&#?\w+;/;
+        // 没有html结构，是一个文本节点,没有匹配到
+        }else if( !rhtml.test( elem )) {
+          // 创建一个文本节点
+          nodes.push( context.createTextNode( elem ) );
+        }else {
+          // 创建临时 文档节点创建的 dom
+          // 尝试获取 tmp, 否则创建
+          tmp = tmp || fragment.appendChild( context.createElement("div") );
+
+          // rtagName = /<([\w:]+)/,
+          // 尝试获取 标签名,匹配到为 ''
+          tag = ( rtagName.exec( elem ) || ["", ""] )[ 1 ].toLowerCase();
+
+          // 对不能直接成为div 子元素的标签进行包裹处理
+          wrap = wrapMap[ tag ] || wrapMap._default;
+
+          // 与createElement 速度
+          // div HTML 写入 包裹后对应的空标签
+          tmp.innerHTML = wrap[1] + elem.replace( rxhtmlTag, "<$1></$2>")+wrap[2];
+
+          j = wrap[0]; // wrap 中第一个元素为,包裹标签的个数
+
+          while( j-- ) {
+            tmp = tmp.lastChild; //向内遍历子元素,取出真正需要的节点的父节点
+          }
+
+          // 把节点拷贝到nodes数组中去
+          $.merge(nodes, tmp.childNodes);
+
+          // 恢复到 fragment的顶级div中
+          tmp = fragment.firstChild;
+
+          // 清空内容
+          tmp.textContent = "";
+        }
+      }
+    }
+
+    // 清空fragment 的内容
+    fragment.textContent = "";
+
+    i = 0;  // 再次初始化
+
+    //- 遍历nodes 数组
+    while ( (elem = nodes[ i++ ])) {
+
+      //- 不存在 selection 数组中的元素会被过滤
+      if ( selection && $.inArray( elem, selection ) !== -1 ) {
+        continue;
+      }
+
+      // ???
+      // contains = $.contains( elem.ownerDocument, elem );
+      // 
+
+      // //true append 
+      // tmp = getAll( fragment.appendChild( elem ), "script" );
+      // // Preserve script evaluation history
+      //if ( contains ) {
+      //  setGlobalEval( tmp );
+      //}
+      fragment.appendChild( elem );
+      // // js执行
+      // if ( scripts ) {
+      //   j = 0;
+      //   while ( (elem = tmp[ j++ ]) ) {
+      //     if ( rscriptType.test( elem.type || "" ) ) {
+      //       scripts.push( elem );
+      //     }
+      //   }
+      // }
+
+    }
+    return fragment;
+}
 
 </script>
+<script>
+  var testfrag = document.getElementById('testfrag');
 
+  var fragCreate = buildFragment(['文本','<p>123','<td>td标签</td>'],document);
+
+  testfrag.appendChild(fragCreate);
+</script>
+<script>
+//- 模拟domManip
+(function($){
+  //- 模拟jQ内部
+  var core_concat = [].concat,
+  rchecked = /checked\s*(?:[^=]|=\s*.checked.)/i;
+  
+  $.fn.extend({
+    /**
+     * append
+     */
+    myAppend: function(){
+      return this.myDomMaip( arguments, function(elem) {
+        // 允许nodeType 为元素,断片,document
+        if( this.nodeType === 1 || this.nodeType === 11 || this.nodeType === 9) {
+          this.appendChild( elem);
+        }
+      });
+    },
+    /**
+     * 模拟doMainp
+     * args              数组,可以是 dom元素,html代码,函数,jQuery对象
+     * callback          fn,执行实际的操作的回调函数
+     * allowIntersection 节点是否替换 
+     */
+    myDomMaip: function(args, callback, allowIntersection){
+
+      // 转成一位数组
+      args = core_concat.apply( [], args);
+
+      var fragment,              // args 创建的文档碎片
+        first,                   // 第一个碎片的子节点
+        scripts,
+        hasScripts,
+        node,
+        doc,
+        i = 0,
+        l = this.length,          // 上下文的 length
+        set = this,               // 保持上下文
+        iNoClone = l - 1,         // 是否为克隆节点
+        value = args[0],          // arg的第一个元素
+        isFunction = $.isFunction( value ); // arg第一个元素为函数
+
+      // 参数过滤 函数, 迭代调用 domMaip
+      /**
+       * 条件判断
+       * arg[0]为fn || ( l  > 1 && typeof value === 'string' && !support.checkClone &&  rchecked.test(value) )
+       */
+      if( isFunction || !( l <= 1 || typeof value !== 'string' || $.support.checkClone || !rchecked.test(value) ) ) {
+
+        // 遍历 调用domMap
+        return this.each( function(index){
+          var self = set.eq( index ); // 更新当前元素
+
+          if( isFunction){
+            args[ 0 ] = value.call( this, index, self.html() );
+          }
+
+          self.myDomMaip( args, callback, allowIntersection );
+        });
+      }
+
+      // 当前选择jq对象存在
+      if( l ) {
+        /**
+         * html2dom
+         */
+        // 创建文档碎片
+        fragment = buildFragment( args, this[0].ownnerDocument || document , false, !allowIntersection && this);
+
+        first = fragment.firstChild; // 碎片的第一个子节点
+
+        // 如果文档中只有一个子元素则 覆盖变量 fragment,单个元素的插入略快
+        if( fragment.childNodes.length === 1) {
+          fragment = first;
+        }
+
+        // 容错判断,至少存在一个节点
+        if( first ) {
+          // script 判断,暂时忽略
+          
+
+          // 调用callback
+          for(; i < l; i++ ) {
+
+            node = fragment;
+
+            // 文档碎片被添加后会转移到对应dom下，所以需要通过 clone
+            if( i !== iNoClone ) {
+              node = $.clone( node, true, true);
+
+              // 处理js
+            }
+
+            callback.call(this[i], node, i);
+            
+
+          }
+
+          // js 调用
+
+
+
+
+        }
+
+
+
+      }
+
+
+      return this;
+    }
+  });
+})(jQuery);
+</script>
+<script>
+$(function(){
+  var core_concat = [].concat;
+
+  console.group('[].concat');
+  $.log( core_concat.apply([], ['2','ccc','ddd',['111','334']]));
+  // 转成一维数组
+  $.log( core_concat.apply([], [function abc(){}]));
+  console.groupEnd();
+});
+</script>
+<script>
+$(function(){
+  $('#append li').myAppend('<a>123</a>','<span>22');
+});
+</script>
 
       </div>
     </div>
