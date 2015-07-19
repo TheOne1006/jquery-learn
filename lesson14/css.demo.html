@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - : css DEMO案例</title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1> css 案例 </h1>
+      <ol>
+        <li>$.fn.css
+          <ul>
+            <li> css(['propertyName']) </li>
+            <li> css(propertyName, value) </li>
+            <li> css(propertyName) </li>
+            <li> css(propertyName, function( index, value )) </li>
+          </ul>
+        </li>
+
+        <li> $.fn.offset
+          <ul>
+            <li> .offset(): 返回匹配元素第一个元素的文档坐标 </li>
+          </ul>
+        </li>
+      </ol>
+  
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> </div>
+      <div class="pennel-body">
+      <h4>
+        案例
+      </h4>
+      <div class='css_array_1' id='css_arr_id1' style="height:30px;width:50px;background:#f0f;opacity:0.5;color:#0f0"> $.fn.css </div>
+      <div class='css_array_1' id='css_arr_id2' style="height:30px;width:60px;background:#f0f;opacity:0.5;color:#0f0"> $.fn.css </div>
+
+      <div class="offset_demo" style="">
+        $.fn.offset1
+      </div>
+      <div class="offset_demo" style="">
+        $.fn.offset2
+      </div>
+
+<script>
+console.group('-css-');
+$.log( $('.css_array_1').css(['height','width','opacity']) );
+// {height:'30px',width:'50px',opacity:'0.5'}
+$('#css_arr_id1').css('width','80px');
+$.log( $('.css_array_1').css('width') ); // 80px
+$('.css_array_1').css('padding-left',function(index, value) {
+  return (100 * index) + 20;
+});
+console.groupEnd();
+</script>
+
+<script>
+  console.group('--offset--');
+    $.log( $('.offset_demo').offset() ); // {top: 328, left: 61}
+    $('.offset_demo').offset({top:400,left: 50}); // 重叠
+    $('.offset_demo').offset(function(index, coords) {
+      return {'top':400 + 100 * index, 'left': 50 + 50 * index};
+    });
+  console.groupEnd();
+</script>
+      </div>
+    </div>
+
+
+
+
+  </div>
+
+
+</body>
+</html>
+

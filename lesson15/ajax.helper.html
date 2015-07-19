@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第十五部分 AJAX :helper </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>AJAX</h1>
+
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small> 私有变量</small> </legend>
+            <ul>
+              <li> ajaxLocParts:[ 当前页面url协议、域名或ip、端口、]
+                <ol>
+                  <li></li>
+                  <li></li>
+                </ol>
+              </li>
+              <li> ajaxLocation: 当前页面的URL</li>
+              <li> ajax_nonce = jQuery.now(), 当前时间戳</li>
+              <li> rhash = /'#.*$'/, left hash 正则</li>
+              <li> rheaders = /^(.*?):[ \t]*([^\r\n]*)$/mg, </li>
+            </ul>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small> 私有函数</small> </legend>
+            <ul>
+              <li>inspectPrefiltersOrTransports </li>
+              <li> done(存在于 ajax 中)</li>
+              <li> addToPrefiltersOrTransports : 初始化 prefilter 或 transports </li>
+
+            </ul>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small> </small> </legend>
+            <ul>
+              <li>  </li>
+          </fieldset>
+        </div>
+      </div>
+
+    </div>
+
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> AJAX 异步操作-私有变量</div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+<pre>
+var 
+  ajaxLocParts, // 当前页面的part
+  ajaxLocation, // 当前页面的url location.href
+
+
+
+
+  rurl = /^([\w.+-]+:)(?:\/\/([^\/?#:]*)(?::(\d+)|)|)/, // location.href => ajaxLocParts
+
+
+
+
+--- 获取 ajaxLoction --
+try {
+  ajaxLocation = location.href;
+}catch( e ){
+    // ie 兼容方法
+    ajaxLocation = document.createElement( "a" );
+    ajaxLocation.href = "";
+    ajaxLocation = ajaxLocation.href;
+}
+
+// 通过rurl 解析 ajaxLocation 成数组存入ajaxLocParts
+ajaxLocParts = rurl.exec( ajaxLocation.toLowerCase() ) || [];
+
+
+
+
+
+-- 前置过滤器 --
+/**
+ * 应用前置过滤器或者请求发送器
+ * structure       prefilters/transports
+ * options         
+ * originalOptions 
+ * jqXHR           
+ * @return 
+ */
+function inspectPrefiltersOrTransports( structure, options, originalOptions, jqXHR ) {
+  /**
+   * 1) 设置变量
+   * 
+   */
+  var inspected = {}, // 
+    seekingTransport = ( structure === transports ); // is transports 
+
+  /**
+   * 2) ( 检查 options.dataTypes[0]) 或者( 检查所有 '*') 
+   */
+  return inspect( options.dataTypes[ 0 ] ) || !inspected[ "*" ] && inspect( "*" );
+
+  function inspect( dataType ) {
+
+    var selected;
+    inspected[ dataType ] = true;
+    
+    jQuery.each( structure[ dataType ] || [], function( _, prefilterOrFactory ) {
+      var dataTypeOrTransport = prefilterOrFactory( options, originalOptions, jqXHR );
+      if( typeof dataTypeOrTransport === "string" && !seekingTransport && !inspected[ dataTypeOrTransport ] ) {
+        options.dataTypes.unshift( dataTypeOrTransport );
+        inspect( dataTypeOrTransport );
+        return false;
+      } else if ( seekingTransport ) {
+        return !( selected = dataTypeOrTransport );
+      }
+    });
+    return selected;
+  }
+}
+
+
+-- addToPrefiltersOrTransports 工厂函数 --
+/**
+ * $.ajaxPrefilter 和 $.ajaxTransport 构造工厂函数
+ *
+ * 返回匿名函数function( dataTypeExpression, func ) { }
+ * 将参数 dataTypeExpression 作为属性存入 structure 中
+ * 
+ */
+function addToPrefiltersOrTransports ( structure /* 结构 */) {
+  /**
+   * dataTypeExpression 数据类型表达式
+   * func               
+   */
+  return function( dataTypeExpression, func ) {
+
+    // 1) 修正参数类型, 省参数 dataTypeExpression 默认 '*'
+    if( typeof dataTypeExpression !== "string" ) {
+      func = dataTypeExpression;
+      dataTypeExpress = "*";
+    }
+
+    /**
+     * 2) 设置变量
+     */
+    var dataType,
+      i = 0,
+      // 拆分 dataTypeExpress 转小写 空格拆分为数组
+      dataTypes = dataTypeExpression.toLowerCase().match( core_rnotwhite ) || [];
+
+    /**
+     * 3) 过滤func 参数
+     */
+    if( jQuery.isFunction( func ) ) {
+      //  迭代遍历 dataTypes
+      while( ( dataType = dataTypes[i++]) ) {
+
+        // dataType 第一个字符为 '+' 则为前置插入
+        if( dataType[0] === '+') {
+          // 修正dataType
+          dataType = dataType.slice( 1 ) || "*";
+          // 尝试获取 structure[dataType] 并插入入 func
+          (structure[dataType] = structure[dataType] || []).unshift( func );
+        }else {
+        // 压入
+          (structure[ dataType ] = structure[ dataType ] || []).push( func );
+        }
+
+      }
+    }
+
+
+
+  }  
+}
+
+
+</pre>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 68.596%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>68.596% 进度 代码共8830行/6057行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
+

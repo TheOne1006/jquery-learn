@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>jQuery源码学习 - 第十五部分 AJAX :line 6755， </title>
+  <meta content="text/html;charset=utf-8" http-equiv="content-type">
+  <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
+  <script type="text/javascript" src='../jquery.js'></script>
+  <script>
+    $.extend({
+      log: function(){
+        var messages = Array.prototype.slice.call(arguments, 0);
+        // 控制台输出,上下文必须时 console
+        console.log.apply( console, ['$log:'].concat(messages) );
+      },
+      log2: function() {
+        console.log.apply( console, arguments);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <div class="page-header">
+      <h1>AJAX</h1>
+      <p> Ajax 模块实现由7部分组成:</p>
+      <ol>
+        <li> 核心方法</li>
+        <li>前置过滤器处理选项</li>
+        <li>请求发送器发送 和取消请求</li>
+        <li>数据转换器</li>
+        <li>Ajax事件</li>
+        <li>工具方法</li>
+      </ol>
+
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small> jQuery.ajax 工具函数</small> </legend>
+            <ul>
+              <li> active:0 ??  </li>
+              <li> lastModified: {} </li>
+              <li> etag:{} </li>
+              <li> ajaxSettings: {} </li>
+              <li> ajaxSetup(): </li>
+              <li> ajax():  </li>
+              <li> getJSON(): 实际调用 <code> $.get </code> </li>
+              <li> getScript(): 实际调用 <code> $.get </code>加载js并执行 </li>
+              <li> get(): => $.ajax() </li>
+              <li> post(): => $.ajax() </li>
+            </ul>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small> 实例方法</small> </legend>
+            <ul>
+              <li> $.fn.load(): </li>
+            </ul>
+          </fieldset>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <fieldset>
+            <legend> <small> jqXHR对象属性 </small> </legend>
+            <ul>
+              <li> readyState: 表示当前jqXHR对象的状态 </li>
+              <li> status: 响应的HTTP 状态码 </li>
+              <li> statusText: 响应的HTTP状态描述 </li>
+              <li> responseText、responseXML: 响应文本内容、XML文档</li>
+              <li> setRequestHeader(name,value): 设置请求头</li>
+              <li> getAllResponseHeaders(): 获取指定名称的响应头的字符串 </li>
+              <li> getResponeHeader(key): 获取指定名称的响应头的值</li>
+              <li> overrideMimeType( type ): ?? 用于覆盖MIME 类型</li>
+              <li> abort( statusText ): 取消本次请求 </li>
+            </ul>
+          </fieldset>
+        </div>
+      </div>
+
+    </div>
+
+
+    <div class="pannel pannel-default">
+      <div class="pannel-heding"> AJAX 异步操作</div>
+      <div class="pennel-body">
+      <h4>
+        伪代码结构
+      </h4>
+<pre>
+
+/**
+ * 前置过滤器
+ */
+var prefilters = {};
+
+
+
+/**
+ * 私有函数
+ */
+// 合并选项(src, jQuery.ajaxSettings.floatOptions )
+function ajaxExtend( target, src ) {
+  var key,
+    keep,
+    flatOptions = jQuery.ajaxSettings.floatOptions || {};
+
+  for( key in src ) {
+    if( src[ key ] !== undefined ) {
+      ( flatOptions[ key ] ? target : (deep || (deep = {}) ) )[ key ] = src[ key ];
+    }
+  }
+
+  if( deep ) {
+    jQuery.extend( true, target, deep );
+  }
+
+  return target;
+}
+
+
+
+jQuery.fn.load():
+
+// 自定义ajax事件
+jQuery.each( ['ajaxStart','ajaxStop', "ajaxComplete", "ajaxError", "ajaxSuccess", "ajaxSend"], function( i, type) {
+  jQuery.fn[ type ] = function( fn ) {
+    return this.on( type , fn)
+  }
+})
+
+jQuery.extend({
+
+
+  ajaxSetup(): 构造完整请求选项集合
+  function( target , settings ) {
+
+    return settings ?
+      ajaxExtend( ajaxExtend (target, jQuery.ajaxSettings ), settings ) :
+      ajaxExtend( jQuery.ajaxSettings, target );
+
+  },
+
+  // 初始化方法 
+  // prefilters 、 transports 为空对象
+  ajaxPrefilter: addToPrefiltersOrTransports( prefilters ),
+  ajaxTransport: addToPrefiltersOrTransports( transports ),
+
+  ajax(): 
+  /**
+   * url     请求url字符串
+   * options 一组项键值对,配置ajax请求
+   */
+  function( url, options ) {
+
+    //- 1) 修正参数
+    if( typeof url === "object" ) {
+      options = url;
+      url = undefined;
+    }
+
+    options = options || {}; // 强制options 设置为对象
+
+    /**
+     * 设置变量
+     */
+    var transport,              // 当前请求分配的请求发送器,含有send()/abort():发送/请求
+      cacheURL,
+      responseHeadersString,    // 存储响应头字符串  
+      responsHeaders,           // 存储响应头和值
+      timeoutTimer,             // 超时计时器,超时后调用 jqXHR.abort
+      parts,                    // 数组, 解析得到协议,域名ip,端口,用于判断是否跨域
+      fireGlobals,              // 是否触发全局Ajax事件
+      i,
+      s = jQuery.ajaxSetup( {}, options ),   // 构造完整的请求选项集
+      callbackContext = s.context || s,      // 回调函数的上下文
+      // ajax上下文，默认上下文为 jQuery.event 
+      globalEventContext = s.context && ( callbackContext.nodeType || callbackContext.jquery ) ? jQuery( callbackContext ) : jQuery.event,
+      // 创建异步(解耦异步任务,和回调函数)
+      deferred = jQuery.Deferred(),
+      // 创建一个回调函数列表，用于存放和触发完成回调函数。
+      completeDeferred = jQuery.Callbacks("once memory"),
+      // 依赖状态码的回调函数
+      statusCode = s.statusCode || {},
+      // 存储和记录请求头
+      requestHeaders = {},
+      requestHeadersNames = {},
+      // jqXHR 对象状态,可选值0、1、2分别是初始化,处理中,响应成功，其中1和2分别对应http状态码的1xx 和 2xx
+      state = 0,
+      // str终止 = 默认为取消
+      strAbort = "canceled",
+      /**
+       * jqXHR 是浏览器原生XMLHttpRequest对象的超集,
+       * 可能模拟XMLHttpRequest的功能,并且jqXHR对象还具有
+       * 异步队列的方法和行为。为了兼容XMLHttpRequest,jqXHR暴露以下方法
+       */
+      jqXHR = {
+        readyState: 0,       // 当前jqXHR对象的状态
+        /**
+         * XMLHTTPRequest.getAllResponseHeaders()增强版
+         * 用于获取指定名称的响应头的值。
+         */
+        getResponseHeader: function( key ) {
+          var match;
+
+          if( state === 2 ) {
+            if( !responseHeaders ) {
+              responseHeaders = {};
+
+              // rheaders = /^(.*?):[ \t]*([^\r\n]*)$/mg,
+              while ( (match = rheaders.exec( responseHeadersString )) ) {
+                responseHeader[ match[1].toLowerCase() ] = match[ 2 ];
+              }
+            }
+            match = responseHeaders[ key.toLowerCase() ];
+
+          }
+          return match == null ? null : match;
+
+        },
+        // 获取响应头的string信息
+        getAllResponseHeaders: function() {
+          return state === 2 ? responseHeadersString: null;
+        },
+        /**
+         * 对应XMLHTTPRequest对象的同名方法,用于设置请求头。
+         * 设置请求头,两者区别在于前者仅仅缓存,知道XMLHTTPRequest对象
+         * open() 之后，在send() 才调用xmlhttpRequest对象同名方法
+         * 设置真正的请求头。
+         */
+        setRequestHeader: function( name, value ) {
+          var lname = name.toLowerCase();
+
+          if( !state ) {
+            // 尝试从requestHeaderName 获取真正的名字
+            name = requestHeaderNames[ lname ] = requestHeadersNames[ lname ] || name;
+
+            requestHeaders[ name ] = value;
+          }
+
+          return this;
+        },
+        /**
+         * 对应XMLHTTPRequest 对象的同名方法，用于覆盖MIME类型。两者的却别在于mimeType
+         * 在调用方法send() 之前调用 XMLHTTPRequest 对象同名方法
+         */
+        overrideMimeType : function( type ) {
+          if( !state ) {
+            s.mimeType = type;
+          }
+          return this;
+        },
+        /**
+         * 状态依赖回调
+         */
+        statusCode: function( map ) {
+          var code;
+          if( map ) {
+            // ???
+            if( state < 2 ) {
+              for( code in map ) {
+                statusCode[ code ] = [ statusCode[ code ], map[ code ] ];
+              }
+            } else {
+              jqXHR.alway( map[ jqXHR.status ] ); 
+            }
+          }
+
+          return this;
+        },
+
+        /**
+         * XMLHTTPRequest 同名方法,用于取消本次请求。
+         */
+        abort: function( statusText ) {
+          var finalText = statusText || strAbort;
+          // ??
+          if( transport ) {
+            transport.abort( finalText );
+          }
+          done( 0, finalText );
+          return this;
+        }
+      };
+
+      // 扩展promise对象
+      deferred.promise( jqXHR ).complete = completeDeferred.add;
+      jqXHR.success = jqXHR.done;
+      jqXHR.error = jqXHR.fail;
+
+      // 修正url 转字符串,去除hash值,若无协议头,则使用location.href 的协议头
+      s.url = ( (url || s.url || ajaxLocation ) + " ")
+        .replace( rhash, "" )
+        .replace( rprotocol, ajaxLocParts[ 1 ] + "//" );
+
+      // 修正type options.method 
+      s.type = options.method || options.type || s.method || s.xtype;
+
+      // 提取数据类型[]
+      s.dataTypes = jQuery.trim( s.dataType || "*" ).toLowerCase().match( core_rnotwhite ) || [""];
+
+      //- 不是跨域
+      // 匹配 协议，域名或iP,端口 与当前页面匹配，一个不同则认为是跨域
+      // rurl = /^([\w.+-]+:)(?:\/\/([^\/?#:]*)(?::(\d+)|)|)/,
+      if ( s.crossDomain == null ) {
+        parts = rurl.exec( s.url.toLowerCase() );
+        s.crossDomain = !!( parts &&
+          ( parts[ 1 ] !== ajaxLocParts[ 1 ] || parts[ 2 ] !== ajaxLocParts[ 2 ] ||
+            ( parts[ 3 ] || ( parts[ 1 ] === "http:" ? "80" : "443" ) ) !==
+              ( ajaxLocParts[ 3 ] || ( ajaxLocParts[ 1 ] === "http:" ? "80" : "443" ) ) )
+        );
+      }
+
+      // 序列化s.data
+      if ( s.data && s.processData && typeof s.data !== "string" ) {
+        s.data = jQuery.param( s.data, s.traditional );
+      }
+
+      // Apply prefilters 应用前置过滤器，修正选项
+      inspectPrefiltersOrTransports( prefilters, s, options, jqXHR );
+
+
+      // 如果选项dataType 对应过滤器中调用jqXHR.abort() 取消本次请求，直接返回 ？？？？
+      if ( state === 2 ) {
+        return jqXHR;
+      }
+
+
+      /**
+       * 10)  触发事件ajaxStrart
+       */
+      fireGlobals = s.global; // default:true
+
+      // 全局事件开启 则 触发全局 ajaxStart事件
+      if ( fireGlobals && jQuery.active++ === 0 ) {
+        jQuery.event.trigger("ajaxStart");
+      }
+
+      // 大写type
+      s.type = s.type.toUpperCase();
+
+      // rnoContent = /^(?:GET|HEAD)$/,
+      // GET/HEAD 请求不需要请求内容
+      s.hasContent = !rnoContent.test( s.type );
+
+      /**
+       * 11) 处理GET/HEAD 不需要请求内容
+       */
+      if( !s.hasContent ) {
+
+        // 存在 s.data 修正url
+        // ajax_rquery = /\?/,
+        if( s.data ) {
+          // s.data 已经转成string形式
+          cacheURL = (s.url += ( ajax_rquery.test(cacheURL)?"&":"?" ) + s.data );
+          delete s.data;
+        }
+
+        // 关闭缓存模式增加 _= 时间戳, defaultOption { cache :true}
+        if ( s.cache === false ) {
+          s.url = rts.test( cacheURL ) ?
+
+            // If there is already a '_' parameter, set its value
+            cacheURL.replace( rts, "$1_=" + ajax_nonce++ ) :
+
+            // Otherwise add one to the end
+            cacheURL + ( ajax_rquery.test( cacheURL ) ? "&" : "?" ) + "_=" + ajax_nonce++;
+        }
+      }
+      -- !s.hasContent endif --
+
+      /**
+       * 12) 设置HTTP 请求头 s.ifModified 默认 false
+       */
+      if ( s.ifModified ) {
+        //- 需要响应请求区别于最后一次请求才会返回 200 和 新内容
+        if ( jQuery.lastModified[ cacheURL ] ) {
+          jqXHR.setRequestHeader( "If-Modified-Since", jQuery.lastModified[ cacheURL ] );
+        }
+        if ( jQuery.etag[ cacheURL ] ) {
+          jqXHR.setRequestHeader( "If-None-Match", jQuery.etag[ cacheURL ] );
+        }
+      }
+
+
+      // 选项data 需要content content类型 不为false 或者强制设置 contentType
+      if( s.data && s.hasContent && s.contentType !== false || options.contentType ) {
+        jqHXR.setRequestHeader( "Content-Type", s.contentType );
+      }
+
+      // 设置 浏览器接受响应类型? 默认 '*/*'
+      jqXHR.setRequestHeader(
+        "Accept",
+        s.dataTypes[ 0 ] && s.accepts[ s.dataTypes[0] ] ?
+          s.accepts[ s.dataTypes[0] ] + ( s.dataTypes[ 0 ] !== "*" ? ", " + allTypes + "; q=0.01" : "" ) :
+          s.accepts[ "*" ]
+      );
+
+      // 设置其他  header 信息
+      for ( i in s.headers ) {
+        jqXHR.setReuestHeader( i, s.headers[ i ] );
+      }
+
+      /**
+       * 13) 调用回调函数 s.beforeSend
+       * 尝试调用 s.beforeSend(),返回值可能终止ajax调用
+       */
+      if ( s.beforeSend && ( s.beforeSend.call( callbackContext, jqXHR, s ) === false || state === 2 ) ) {
+        // return false 终止
+        return jqXHR.abort();
+      }
+
+      // aborting is no longer a cancellation
+      strAbort = "abort";  // default "canceled"
+
+
+      /**
+       * 14) 添加成功、失败、进行回调函数
+       * 添加对应的defer信息
+       */
+      for( in in { success:1, error: 1, complete: 1} ) {
+        jqXHR[ i ]( s[ i ] );
+      }
+
+      /**
+       * 15) 获取请求发送器 ????
+       */
+      transport = inspectPrefiltersOrTransports( transports, s, options, jqXHR );
+
+      /**
+       * 16) 触发全局事件 ajaxSend
+       */
+      if( !transport ) {
+        // 没有找到对应发送器,触发失败回调函数,并结束请求
+        done( -1, "No Transport ");
+      } else {
+        jqXHR.readyState = 1; // 1:表示正在装载与XMLHTTPRequest对象一致
+
+        if( fireGlobals ) {
+          // 触发全局 "ajaxSend"
+          globalEventContext.trigger( "ajaxSend", [ jqXHR, s ] );
+        }
+
+         /**
+          * 17) 设置超时定时器, timeout 参数为 毫秒数
+          */
+         if( s.async && s.timeout > 0 ) {
+          timeoutTimer = setTimeout( function() {
+            jqXHR.abort('timeout');
+          }, s.timeout );
+         }
+
+         /**
+          * 18) 调用请求发送器方法 transport.send
+          */
+         try{
+          state = 1;
+          // 传入请求头集合 requestHeaders 和回调函数 done
+          transport.send( requestHeaders, done );
+         }catch( e ) {
+          // 异常处理
+          if( state < 2 ) {
+            done( -1, e);
+          } else {
+            throw e;
+          }
+         }
+      }
+
+
+      // done 回调函数.....
+      function done( ){
+
+      }
+
+      return jqXHR;
+
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  }
+  // - ajax end -
+});
+
+
+-- 添加前置过滤器和请求发送器工厂函数 ??? --
+jQuery.ajaxPrefilter('script', function( s ) {
+  
+});
+
+jQuery.ajaxPrefilter( "json jsonp", function( s, originalSettings, jqXHR ) {
+
+});
+
+jQuery.ajaxTransport( "script", function( s ) {
+  
+});
+
+jQuery.ajaxTransport( func){
+  
+}
+-- 添加前置过滤器和请求发送器工厂函数 end   --
+
+
+
+-- inspectPrefiltersOrTransports --
+
+
+</pre>
+
+
+      </div>
+    </div>
+
+
+
+    <div class='row'>
+      <div class="col-md-12">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 68.596%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>68.596% 进度 代码共8830行/6057行</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</body>
+</html>
+

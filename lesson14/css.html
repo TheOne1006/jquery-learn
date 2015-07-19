@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>jQuery源码学习 - 第十三部分 CSS :line 6058, </title>
+  <title>jQuery源码学习 - 第十四部分 CSS :line 6058, 6754</title>
   <meta content="text/html;charset=utf-8" http-equiv="content-type">
   <link rel="stylesheet" type="text/css" href="../bootcss/css/bootstrap.css">
   <script type="text/javascript" src='../jquery.js'></script>
@@ -21,11 +21,53 @@
 <body>
   <div class="container">
     <div class="page-header">
-      <h1>CSS操作,主要解决问题</h1>
+      <h1>CSS操作,主要解决问题(未完成)</h1>
       <ol>
         <li> 兼容浏览器</li>
-        <li> 兼容驼峰和连字符式样式名</li>
-        <li> 简化样式读取设置</li>
+        <li> 样式规则
+          <ul>
+            <li>
+              任何支持style特性的HTML元素在js中有一个对象的style属性，其实也是一个实例，但是内部属性命名都是采用的驼峰形式的
+              比如 background-image =>要写成  backgroundImage
+            </li>
+            <li>
+              其中一个是比较特殊的就是 float,  保留字嘛所以就换成 cssFloat,  IE : styleFloat
+            </li>
+            <li>
+              然后对于width,hight这些处理都最好要有一个量度单位
+            </li>
+          </ul>
+        </li>
+        <li> 合并cssText
+          <ul>
+            <li>head.style.cssText="width:20px;height:10px;display:bolck";</li>
+            <li>
+              和innerHTML一样，cssText很快捷且所有浏览器都支持
+            </li>
+            <li>
+              此外当批量操作样式时，cssText只需一次reflow，提高了页面渲染性能(当然如果是在创建的时候，我们还可以利用文档碎片)
+            </li>
+            <li>
+              缺点自然就是样式被整体覆盖了，所以在处理的时候应该要先获取需要保留的样式然后再拼接起来(??)
+            </li>
+          </ul>
+        </li>
+        <li> 样式访问
+          <ul>
+            <li>style只能获取行类样式</li>
+            <li>getComputedStyle():类似style属性的 css的dom隐射的实例对象,也包行了样式表的最终样式了</li>
+            <li>区别就在于getComputedStyle是只能读的，style是可以可读可写的</li>
+            <li> ie: currentStyle()</li>
+          </ul>
+        </li>
+        <li> 原生js
+          <ul>
+            <li>head.style.width = "20px";</li>
+            <li> 单一的设置太麻烦，而且每次style一次就等于浏览器要绘制一次，当然高级的浏览器是可能会合并style的次数的</li>
+            <li>  style只能针对行类样式 </li>
+            <li>样式属性名的兼容问题，比如驼峰，保留字</li>
+          </ul>
+        </li>
       </ol>
 
       <div class="row">
@@ -43,6 +85,12 @@
             <legend> <small>私有函数 </small> </legend>
             <ul>
               <li> getStyles(): </li>
+              <li> curCSS(): </li>
+              <li> setPositiveNumber(): </li>
+              <li> angumentWidthOrHeight(): </li>
+              <li> getWidthOrHeight(): </li>
+              <li> css_defaultDisplay(): </li>
+              <li> actualDisplay(): </li>
             </ul>
           </fieldset>
         </div>
@@ -52,7 +100,42 @@
           <fieldset>
             <legend> <small> $.fn 实例方法</small> </legend>
             <ul>
-              <li> $.fn.css(): 调用 <code> getSyles() / $.style() </code> </li>
+              <li>
+                内联样式,计算样式
+                <ol>
+                    <li> $.fn.css( ): 调用 <code> getSyles( ) / $.style( ) </code> </li>
+                </ol>
+              </li>
+              <li>
+                类样式,属性操作
+                <ol>
+                  <li> $.fn.addClass </li>
+                  <li> $.fn.removeClass </li>
+                  <li> $.fn.toggleClass </li>
+                  <li> $.fn.hasClass </li>
+                </ol>
+              </li>
+              <li>
+                坐标
+                <ol>
+                  <li> $.fn.offset 元素的文档坐标 <code> $.offset.setOffset() / get内部</code></li>
+                  <li> $.fn.position 定位</li>
+                  <li> $.fn.scrollLeft 水平滚动 </li>
+                  <li> $.fn.scrollTop 垂直滚动</li>
+                </ol>
+              </li>
+              <li>
+                尺寸
+                <ol>
+                  <li> $.fn.width 宽度</li>
+                  <li> $.fn.height 高度</li>
+                  <li> $.fn.innerWidth </li>
+                  <li> $.fn.innerHeight </li>
+                  <li> $.fn.outerWidth </li>
+                  <li> $.fn.outerHeight </li>
+                </ol>
+              </li>
+
               <li> $.fn.show(): 调用 <code> 私有方法 showHide()</code> </li>
               <li> $.fn.hide(): 调用 <code> 私有方法showHide();</code></li>
               <li>
@@ -71,8 +154,8 @@
               <li> $.cssHooks: hook对象</li>
               <li> $.cssNumber: </li>
               <li> $.cssProps: </li>
-              <li> $.style(): </li>
-              <li> $.css </li>
+              <li> $.style(): 读求或设置<code>内联</code>样式 </li>
+              <li> $.css(): </li>
             </ul>
           </fieldset>
         </div>
@@ -91,11 +174,248 @@
  * 私有变量
  */
 var curCSS,
-  iframe,
+  iframe;
+
+
+/**
+ * 扩展实例方法
+ */
+jQuery.fn.extend({
+  css():设置或者获得样式
+  /**
+   * css( propertyName ) 计算第一个元素的样式属性值
+   * css( propertyName, value) 每个元素设置属性值
+   * css( propertyName, fn(index, value))
+   */
+  function(name, value) {
+
+    var fn = function( elem, name, value) {
+      var styles,
+        len,
+        map = {},
+        i = 0;
+
+      if( jQuery.isArray(name) ) {
+        styles = getStyles( elem );
+        len = name.length;
+
+        // $().css(['height','color'])
+        for( ; i < len ; i++ ) {
+          map[ name[ i ] ] = jQuery.css( elem, name[ i ] , false, styles );
+        }
+
+        return map;
+      }
+
+      return value !== undefined ?
+        jQuery.style( elem, name, value ) :
+        jQuery.css( elem, name );
+    }
+
+    return jQuery.access(this, fn, name, value, arguments.length > 1 );
+  }
+})
 
 
 
 
+
+jQuery.extend({
+  
+
+
+
+  style(): 获取、设置内联样式
+  /**
+   * elem  dom元素
+   * name  读取、设置的样式名
+   * value 样式值
+   * extra [string] 用于指示宽度、高度公式？？
+   */
+  function( elem, name, value, extra ) {
+
+    /**
+     * 1) 过滤元素
+     * 不存在elem,或者不支持.style的元素
+     */
+    if( !elem || elem.nodeType === 3 || elem.nodeType === 8 || !elem.style ) {
+      return;
+    }
+
+    var ret,                               // 
+      type,                                // typeof type
+      hooks,                               // 样式钩子
+      origName = jQuery.camelCase( name ), // 驼峰
+      style = elem.style;                  // 内联样式
+
+    /**
+     * 2) 尝试修正样式名
+     */
+    name = jQuery.cssProps[ origName ] || ( jQuery.cssProps[ origName ] = verdorPropName( style, origName ) );
+
+    if( value !== undefined ) {
+      /**
+       * 3) value存在,则为设置内联样式
+       */
+      type = typeof value;
+
+      // rrelName = /^([\-+])=([\-+.\de]+)/,
+      // ret[1] 匹配 正负号 "+","-"
+      // ret[2] 匹配 相对值字符串 
+      if( type === "string" && (ret = rrelNum.exec( value )) ) {
+        value = ( ret[1] + 1 ) * ret[2] + parseFloat( jQuery.css( elem, name ) );
+
+        // 计算偏移量
+        value = ( ret[1] + 1 ) * ret[2] + parseFloat( jQuery.css( elem, name ) );
+
+        // 修正firebug 设置
+        type = "number";
+
+      }
+
+      //  过滤 null , NaN
+      if( value == null || type === "number" && isNaN(value) ){
+        return;
+      }
+
+      // 如果是数值类型增加px,除了$.cssNumber
+      if( type === "number" && !jQuery.cssNumber[origName] ) {
+        value += "px";
+      }
+
+      //- ??
+      if ( !jQuery.support.clearCloneStyle && value === "" && name.indexOf("background") === 0 ) {
+        style[ name ] = "inherit";
+      }
+
+      // 尝试使用hooks的set 修正方法
+      if( !hooks || !("set" in hooks) || (value = hooks.set( elem, value, extra )) !== undefined ) {
+        style[ name ] = value;
+      }
+
+    } else {
+      // 尝试get
+      if ( hooks && "get" in hooks && (ret = hooks.get( elem, false, extra )) !== undefined ) {
+        return ret;
+      }
+
+      return style[ name ];
+    }
+  },
+
+  css(): 读取dom元素的计算样式
+  /**
+   * elem   dom元素
+   * name   待设置样式
+   * extra  [string] 指示获得高度，宽度计算公式
+   * styles ??
+   */
+  function( elem, name, extra, styles ) {
+
+    var val,
+      num,
+      hooks,
+      origName = jQuery.camelCase( name );
+
+    name = jQuery.cssProps[ origName ] || ( jQuery.cssProps[ origName ] = vendorPropName( elem.style, origName ) );
+
+    //- 1) 调用hooks 方法
+    if( hooks && "get" in hooks) {
+      val = hooks.get( elem, true, extra );
+    }
+    //- 2) 其次调用 curCss (计算样式)
+    if( val === undefined ) {
+      val = curCSS( elem, name, styles );
+    }
+
+    //- 3) css3样式
+    if ( val === "normal" && name in cssNormalTransform ) {
+      val = cssNormalTransform[ name ];
+    }
+
+    if( extra === "" || extra ) {
+      // ??? extra....
+    }
+
+    return val;
+  }
+
+})
+
+</pre>
+
+<pre>
+// -- offset --
+// 文档坐标
+jQuery.fn.offset = function( options ) {
+    
+    /**
+     * 1) 如果传入 options 则遍历设置文档坐标
+     */
+    if( arguments.length ) {
+      return options === undefined ?
+        this :
+        this.each( function ( i ) {
+          jQuery.offset.setOffset( this, options, i );
+        });
+    }
+
+    /**
+     * 2) 读取
+     */
+    var docElem,
+      win,
+      elem = this[0],
+      box = { top: 0, left: 0},
+      doc = elem && elem.ownerDocument;
+
+    //- 过滤文档不存在的元素
+    if( !doc ) {
+      return;
+    }
+
+    docElem = doc.documentElement;
+
+    // ?? 不是一个断开的元素
+    if ( !jQuery.contains( docElem, elem ) ) {
+      return box;
+    }
+
+    /**
+     * 使用getBoundingClientRect() 元素的窗口坐标位
+     */
+    if( typeof elem.getBoundingClientRect !== core_strundefined ) {
+      box = elem.getBoundingClientRect();
+    }
+    win = getWindow( doc );
+
+    return {
+    /**
+     * 距离文档上坐标 = 距离窗口上坐标 + 垂直滚动偏移 - 文档上边框
+     * 距离文档左坐标 = 距离窗口左坐标 + 水平滚动偏移 - 文档左边框
+     */
+      top: box.top + win.pageYOffset - docElem.clientTop,
+      left: box.left + win.pageXOffset - docElem.clientLeft
+    };
+
+}
+// 设置offset
+jQuery.offset = {
+  
+  //- 用于设置单个元素文档坐标
+  setOffset(): 
+  /**
+   * elem    元素
+   * options 坐标对象{left:val,top:val}
+   * i       结合下标
+   */
+  function( elem, options, i ) {
+    var curPosition,
+      curLeft,
+      curCSSTop,
+      
+  }
+}
 
 </pre>
 
@@ -108,8 +428,8 @@ var curCSS,
     <div class='row'>
       <div class="col-md-12">
         <div class="progress">
-          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 68.596%;background:#428bca">
-            <span style='min-width: 20px;color:#fff'>68.596% 进度 代码共8830行/6057行</span>
+          <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 76.489%;background:#428bca">
+            <span style='min-width: 20px;color:#fff'>76.489% 进度 代码共8830行/6754行</span>
           </div>
         </div>
       </div>
